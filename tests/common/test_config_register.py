@@ -16,7 +16,7 @@ def test_config_register():
     cr = define_config_register(WIDTH, m.bits(ADDR_VALUE, ADDR_WIDTH), True)
     m.compile("config_register", cr, output='coreir')
     gold_check = check_files_equal("config_register.json",
-                                   "test_common/gold/config_register.json")
+                                   "tests/common/gold/config_register.json")
     assert gold_check
     res = os.system("\\rm config_register.json")
     assert res == 0
