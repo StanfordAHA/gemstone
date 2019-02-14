@@ -1,5 +1,5 @@
 import magma
-from generator.generator import Generator
+from ..generator.generator import Generator
 
 
 class ZextWrapper(Generator):
