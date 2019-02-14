@@ -1,6 +1,6 @@
 import random
 from bit_vector import BitVector
-from common.configurable_model import ConfigurableModel
+from gemstone.common.configurable_model import ConfigurableModel
 
 
 def test_configurable_model_smoke():

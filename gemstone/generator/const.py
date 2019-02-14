@@ -1,8 +1,8 @@
-import generator.generator as generator
-from generator.port_reference import PortReferenceBase
+from .generator import *
+from .port_reference import *
 
 
-class ConstGenerator(generator.Generator):
+class ConstGenerator(Generator):
     def __init__(self):
         super().__init__()
 

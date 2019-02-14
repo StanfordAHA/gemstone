@@ -1,7 +1,7 @@
 import magma as m
 import tempfile
-from common.dummy_core_magma import DummyCore
-from common.util import check_files_equal
+from gemstone.common.dummy_core_magma import DummyCore
+from gemstone.common.util import check_files_equal
 
 
 def test_instance_name_tile():
@@ -11,4 +11,4 @@ def test_instance_name_tile():
     with tempfile.TemporaryDirectory() as tempdir:
         m.compile(f"{tempdir}/core", circuit)
         check_files_equal(f"{tempdir}/core.v",
-                          "test_generator/gold/core_instance_name.v")
+                          "tests/generator/gold/core_instance_name.v")

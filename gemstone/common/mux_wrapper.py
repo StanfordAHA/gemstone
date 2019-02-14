@@ -1,10 +1,10 @@
 import magma
 import mantle
-import generator.generator as generator
-from generator.from_magma import FromMagma
+from ..generator.generator import Generator
+from ..generator.from_magma import FromMagma
 
 
-class MuxWrapper(generator.Generator):
+class MuxWrapper(Generator):
     def __init__(self, height, width, name=None):
         super().__init__(name)
 

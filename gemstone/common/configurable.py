@@ -1,8 +1,8 @@
 import magma
 import mantle
-import generator.generator as generator
-from common.collections import DotDict
-from generator.port_reference import PortReferenceBase
+from ..generator.generator import Generator
+from .collections import DotDict
+from ..generator.port_reference import PortReferenceBase
 
 
 def ConfigurationType(addr_width, data_width):
@@ -13,7 +13,7 @@ def ConfigurationType(addr_width, data_width):
                        )
 
 
-class Configurable(generator.Generator):
+class Configurable(Generator):
     def __init__(self):
         super().__init__()
 
@@ -30,7 +30,7 @@ class Configurable(generator.Generator):
             self.add_config(name, width)
 
 
-class ConfigRegister(generator.Generator):
+class ConfigRegister(Generator):
     def __init__(self, width, use_config_en=False, name=None):
         super().__init__(name)
 

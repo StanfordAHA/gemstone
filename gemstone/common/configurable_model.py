@@ -1,5 +1,5 @@
 from bit_vector import BitVector
-from common.model import Model
+from .model import Model
 
 
 def ConfigurableModel(config_data_width, config_addr_width):

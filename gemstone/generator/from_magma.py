@@ -1,8 +1,8 @@
 import magma
-import generator.generator as generator
+from .generator import *
 
 
-class FromMagma(generator.Generator):
+class FromMagma(Generator):
     def __init__(self, circuit):
         super().__init__()
 

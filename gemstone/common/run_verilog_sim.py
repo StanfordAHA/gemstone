@@ -1,7 +1,7 @@
 import os
 import shutil
 import tempfile
-from common.util import deprecated
+from .util import deprecated
 
 
 TCL_FILE = "common/irun/cmd.tcl"

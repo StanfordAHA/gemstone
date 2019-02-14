@@ -1,8 +1,8 @@
 import magma
-import generator.generator as generator
+from ..generator.generator import Generator
 
 
-class CoreirWrap(generator.Generator):
+class CoreirWrap(Generator):
     def __init__(self, out_type, in_type, type_name):
         super().__init__()
 

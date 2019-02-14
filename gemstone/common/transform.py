@@ -1,6 +1,6 @@
-from common.mux_with_default import MuxWithDefaultWrapper
-from generator.from_magma import FromMagma
-from generator.generator import Generator
+from .mux_with_default import MuxWithDefaultWrapper
+from ..generator.from_magma import FromMagma
+from ..generator.generator import Generator
 import magma
 import mantle
 

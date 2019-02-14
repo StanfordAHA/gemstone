@@ -13,7 +13,7 @@
 //	-----------------------------------------------
 //	
 //
-//  Source file: /Users/setaluri/dev/magma_cgra/test_common/test_run_genesis.vp
+//  Source file: /Users/setaluri/dev/magma_cgra/tests/common/test_run_genesis.vp
 //  Source template: test_run_genesis
 //
 // --------------- Begin Pre-Generation Parameters Status Report ---------------

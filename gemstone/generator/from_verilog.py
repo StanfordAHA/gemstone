@@ -1,5 +1,5 @@
 import magma
-from generator.from_magma import FromMagma
+from .from_magma import *
 
 
 class FromVerilog(FromMagma):

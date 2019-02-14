@@ -1,8 +1,8 @@
 import magma
-import generator.generator as generator
+from generator.generator import Generator
 
 
-class ZextWrapper(generator.Generator):
+class ZextWrapper(Generator):
     def __init__(self, in_width, out_width):
         super().__init__()
 

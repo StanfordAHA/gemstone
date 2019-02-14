@@ -1,10 +1,10 @@
 import pytest
-from common.run_verilog_sim import \
+from gemstone.common.run_verilog_sim import \
     irun, run_verilog_sim, irun_available, verilog_sim_available
 
 
 def run_sim(run_func, available_func):
-    files = ["test_common/hello_world.sv"]
+    files = ["tests/common/hello_world.sv"]
     success = False
     try:
         res = run_func(files, top_name="hello_world", cleanup=True)

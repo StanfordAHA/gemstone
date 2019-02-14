@@ -2,12 +2,12 @@ import pytest
 import inspect
 import random
 import magma as m
-from common.genesis_wrapper import GenesisWrapper
-from common.generator_interface import GeneratorInterface
+from gemstone.common.genesis_wrapper import GenesisWrapper
+from gemstone.common.generator_interface import GeneratorInterface
 
 
 TOP = "test_run_genesis"
-INFILES = ["test_common/test_run_genesis.vp"]
+INFILES = ["tests/common/test_run_genesis.vp"]
 PARAMS = {
     "width": 16,
 }

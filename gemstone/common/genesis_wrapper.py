@@ -1,7 +1,7 @@
 from typing import Dict, List
 import argparse
 import magma as m
-from common.run_genesis import run_genesis
+from .run_genesis import run_genesis
 
 
 default_type_map = {"clk": m.In(m.Clock),

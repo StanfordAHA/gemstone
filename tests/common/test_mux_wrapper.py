@@ -5,7 +5,7 @@ from bit_vector import BitVector
 import fault
 import fault.random
 import magma
-from common.mux_wrapper import MuxWrapper
+from gemstone.common.mux_wrapper import MuxWrapper
 
 
 @pytest.mark.parametrize('height,width', [(randint(2, 10), randint(1, 32))

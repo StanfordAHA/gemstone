@@ -5,7 +5,7 @@ from bit_vector import BitVector
 import fault
 import fault.random
 import magma
-from common.mux_with_default import MuxWithDefaultWrapper
+from gemstone.common.mux_with_default import MuxWithDefaultWrapper
 
 
 test_cases = [(randint(2, 10), randint(1, 32), randint(4, 32),

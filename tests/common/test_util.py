@@ -1,6 +1,6 @@
 import tempfile
 import pathlib
-from common.util import ip_available, deprecated
+from gemstone.common.util import ip_available, deprecated
 
 
 def test_ip_available():

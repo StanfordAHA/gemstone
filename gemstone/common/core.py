@@ -1,7 +1,7 @@
 from abc import abstractmethod
-from generator.configurable import Configurable, ConfigurationType
-from generator.from_magma import FromMagma
-from generator.generator import Generator
+from .configurable import Configurable, ConfigurationType
+from ..generator.from_magma import FromMagma
+from ..generator.generator import Generator
 import magma
 from typing import List, Union
 import mantle

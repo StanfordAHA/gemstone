@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 import magma
-from common.coreir_wrap import CoreirWrap
+from gemstone.common.coreir_wrap import CoreirWrap
 
 
 # TODO(rsetaluri): Add 'Clock' to types, once

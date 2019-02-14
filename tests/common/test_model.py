@@ -1,4 +1,4 @@
-from common.model import Model
+from gemstone.common.model import Model
 
 
 def test_model():

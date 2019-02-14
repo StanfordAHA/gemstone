@@ -1,12 +1,12 @@
 import magma
 import mantle
-from common.mux_wrapper import MuxWrapper
-import generator.generator as generator
-from generator.const import Const
-from generator.from_magma import FromMagma
+from ..common.mux_wrapper import MuxWrapper
+from ..generator.generator import Generator
+from ..generator.const import Const
+from ..generator.from_magma import FromMagma
 
 
-class MuxWithDefaultWrapper(generator.Generator):
+class MuxWithDefaultWrapper(Generator):
     """
     This generator returns a circuit with the following semantics"
 
@@ -56,7 +56,8 @@ class MuxWithDefaultWrapper(generator.Generator):
 
         # Wire select input to select input of data_mux. Note that we only wire
         # the first clog2(num_inputs) bits of the select input.
-        self.wire(self.ports.S[:self.data_mux.sel_bits], self.data_mux.ports.S)
+        self.wire(self.ports.S[:self.data_mux.sel_bits],
+                  self.data_mux.ports.S[:self.data_mux.sel_bits])
 
         # Wire default value to first input of default mux, and output of
         # data_mux to second input of default mux.

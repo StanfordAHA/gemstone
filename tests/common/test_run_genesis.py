@@ -1,8 +1,8 @@
-from common.run_genesis import run_genesis
+from gemstone.common.run_genesis import run_genesis
 
 
 TOP = "test_run_genesis"
-INFILES = ["test_common/test_run_genesis.vp"]
+INFILES = ["tests/common/test_run_genesis.vp"]
 PARAMS = {
     "width": 16,
 }

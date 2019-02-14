@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from ordered_set import OrderedSet
-import magma
-from common.collections import DotDict
-from generator.port_reference import PortReference, PortReferenceBase
 import warnings
+import magma
+from ..common.collections import DotDict
+from .port_reference import *
 
 
 class Generator(ABC):

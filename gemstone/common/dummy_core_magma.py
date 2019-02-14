@@ -1,7 +1,7 @@
 import magma
-from common.core import Core
-from generator.configurable import ConfigurationType
-from common.mux_with_default import MuxWithDefaultWrapper
+from .core import Core
+from .configurable import ConfigurationType
+from .mux_with_default import MuxWithDefaultWrapper
 
 
 class DummyCore(Core):

@@ -2,7 +2,7 @@ import pytest
 import random
 import tempfile
 import fault
-from common.zext_wrapper import ZextWrapper
+from gemstone.common.zext_wrapper import ZextWrapper
 
 
 @pytest.mark.parametrize("in_width,out_width", [(5, 10), (10, 5)])
