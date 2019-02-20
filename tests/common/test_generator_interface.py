@@ -1,6 +1,6 @@
 import random
 import string
-from common.generator_interface import GeneratorInterface
+from gemstone.common.generator_interface import GeneratorInterface
 
 
 def generate_random_string(k):
