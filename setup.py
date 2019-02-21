@@ -11,7 +11,7 @@ setup(
     install_requires=[
         "magma-lang",
         "mantle",
-        "fault",
+        "fault>=1.0.7",
         "ordered_set",
     ],
 )
