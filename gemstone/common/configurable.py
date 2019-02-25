@@ -5,6 +5,40 @@ from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
 
 
+@magma.cache_definition
+def _generate_config_register(width, addr, addr_width,
+                              data_width, use_config_en):
+    T = magma.Bits(width)
+
+    class _ConfigRegister(magma.Circuit):
+        name = f"ConfigRegister_{width}_{addr_width}_{data_width}_{addr}"
+        IO = [
+            "clk", magma.In(magma.Clock),
+            "reset", magma.In(magma.AsyncReset),
+            "O", magma.Out(T),
+            "config_addr", magma.In(magma.Bits(addr_width)),
+            "config_data", magma.In(magma.Bits(data_width)),
+        ]
+        if use_config_en:
+            IO.extend(["config_en", magma.In(magma.Bit)])
+
+        @classmethod
+        def definition(io):
+            reg = mantle.Register(width,
+                                  has_ce=True,
+                                  has_async_reset=True)
+            magma.wire(io.clk, reg.CLK)
+            ce = (io.config_addr == magma.bits(addr, addr_width))
+            magma.wire(io.reset, reg.ASYNCRESET)
+            if use_config_en:
+                ce = ce & io.config_en
+            magma.wire(io.config_data[0:width], reg.I)
+            magma.wire(ce, reg.CE)
+            magma.wire(reg.O, io.O)
+
+    return _ConfigRegister
+
+
 def ConfigurationType(addr_width, data_width):
     return magma.Tuple(config_addr=magma.Bits(addr_width),
                        config_data=magma.Bits(data_width),
@@ -75,25 +109,8 @@ class ConfigRegister(Generator):
         self.add_port("config_data", magma.In(magma.Bits(self.data_width)))
 
     def circuit(self):
-        class _ConfigRegisterCircuit(magma.Circuit):
-            name = self.name()
-            IO = self.decl()
-
-            @classmethod
-            def definition(io):
-                reg = mantle.Register(self.width,
-                                      has_ce=True,
-                                      has_async_reset=True)
-                magma.wire(io.clk, reg.CLK)
-                ce = (io.config_addr == magma.bits(self.addr, self.addr_width))
-                magma.wire(io.reset, reg.ASYNCRESET)
-                if self.use_config_en:
-                    ce = ce & io.config_en
-                magma.wire(io.config_data[0:self.width], reg.I)
-                magma.wire(ce, reg.CE)
-                magma.wire(reg.O, io.O)
-
-        return _ConfigRegisterCircuit
+        return _generate_config_register(self.width, self.addr, self.addr_width,
+                                         self.data_width, self.use_config_en)
 
     def name(self):
         return f"ConfigRegister"\

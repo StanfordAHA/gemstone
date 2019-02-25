@@ -37,3 +37,23 @@ def test_mux_wrapper(height, width):
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
+
+
+def test_pass_through_mux_wrapper():
+    height = 1
+    width = 16
+    mux = MuxWrapper(height, width)
+    assert mux.height == height
+    assert mux.width == width
+    assert mux.name() == f"MuxWrapper_{height}_{width}"
+
+    mux_circuit = mux.circuit()
+    tester = fault.Tester(mux_circuit)
+    input_ = fault.random.random_bv(width)
+    tester.poke(mux_circuit.I[0], input_)
+    tester.eval()
+    tester.expect(mux_circuit.O, input_)
+    with tempfile.TemporaryDirectory() as tempdir:
+        tester.compile_and_run(directory=tempdir,
+                               magma_output="coreir-verilog",
+                               flags=["-Wno-fatal"])
