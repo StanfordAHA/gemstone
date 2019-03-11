@@ -46,7 +46,7 @@ def irun(files,
     with tempfile.NamedTemporaryFile(delete=cleanup) as cmd_file:
         cmd_file.write(irun_cmd.source().encode())
         irun_cmd = f"irun -sv -top {top_name} -timescale 1ns/1ps -l irun.log " \
-                   f"-access +rwc -notimingchecks -input {cmd_file} " \
+                   f"-access +rwc -notimingchecks -input {cmd_file.name} " \
                    f"{files_string}"
         print(f"Running irun cmd: {irun_cmd}")
         if not os.system(irun_cmd) == 0:
