@@ -4,9 +4,6 @@ import tempfile
 from .util import deprecated
 
 
-TCL_FILE = "common/irun/cmd.tcl"
-
-
 def irun_available():
     return shutil.which("irun") is not None
 
@@ -24,9 +21,9 @@ def verilog_sim_available():
 
 # We don't cover this function because irun is not available on travis
 def irun(files,
+         tcl_file,
          top_name="top",
-         cleanup=False,
-         tcl_file=TCL_FILE):  # pragma: nocover
+         cleanup=False):  # pragma: nocover
     if len(files) == 0:
         print("Warning: irun requires at least 1 input file. Skipping irun.")
         return True
