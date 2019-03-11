@@ -44,7 +44,7 @@ def irun(files,
         irun_cmd = IrunCommand()
     files_string = " ".join(files)
     with tempfile.NamedTemporaryFile(delete=cleanup) as cmd_file:
-        cmd_file.write(irun_cmd.source())
+        cmd_file.write(irun_cmd.source().encode())
         irun_cmd = f"irun -sv -top {top_name} -timescale 1ns/1ps -l irun.log " \
                    f"-access +rwc -notimingchecks -input {cmd_file} " \
                    f"{files_string}"
