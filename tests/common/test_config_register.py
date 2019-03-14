@@ -1,7 +1,7 @@
 import os
 import filecmp
 import magma as m
-from bit_vector import BitVector
+from hwtypes import BitVector
 from magma.simulator.coreir_simulator import CoreIRSimulator
 from gemstone.common.config_register import define_config_register
 from gemstone.common.util import check_files_equal

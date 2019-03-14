@@ -1,4 +1,4 @@
-from bit_vector import BitVector
+from hwtypes import BitVector
 from .model import Model
 
 

@@ -1,7 +1,7 @@
 import pytest
 from random import randint
 import tempfile
-from bit_vector import BitVector
+from hwtypes import BitVector
 import fault
 import fault.random
 import magma
