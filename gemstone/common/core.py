@@ -19,6 +19,14 @@ class Core(Configurable):
     def features(self) -> List[Union["Core", "CoreFeature"]]:
         return [self]
 
+    @abstractmethod
+    def configure(self, instr):
+        pass
+
+    @abstractmethod
+    def instruction_type(self):
+        pass
+
 
 class CoreFeature(Generator):
     def __init__(self,
