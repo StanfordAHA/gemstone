@@ -1,10 +1,10 @@
 import magma
-from .core import Core
+from .core import ConfigurableCore
 from .configurable import ConfigurationType
 from .mux_with_default import MuxWithDefaultWrapper
 
 
-class DummyCore(Core):
+class DummyCore(ConfigurableCore):
     def __init__(self):
         super().__init__(8, 32)
 

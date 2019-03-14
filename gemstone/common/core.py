@@ -7,7 +7,7 @@ from typing import List, Union
 import mantle
 
 
-class Core(Configurable):
+class Core(Generator):
     @abstractmethod
     def inputs(self):
         pass
@@ -18,6 +18,12 @@ class Core(Configurable):
 
     def features(self) -> List[Union["Core", "CoreFeature"]]:
         return [self]
+
+
+class ConfigurableCore(Core, Configurable):
+    def __init__(self, config_addr_width, config_data_width):
+        Core.__init__(self)
+        Configurable.__init__(self, config_addr_width, config_data_width)
 
     @abstractmethod
     def configure(self, instr):
