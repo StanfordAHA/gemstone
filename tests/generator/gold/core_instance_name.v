@@ -1,11 +1,11 @@
-module corebit_and (
-  input in0,
-  input in1,
+module coreir_ult #(parameter width=1) (
+  input [width-1:0] in0,
+  input [width-1:0] in1,
   output out
 );
-  assign out = in0 & in1;
+  assign out = in0 < in1;
 
-endmodule  // corebit_and
+endmodule  // coreir_ult
 
 module coreir_reg_arst #(parameter arst_posedge=1, parameter clk_posedge=1, parameter init=1, parameter width=1) (
   input clk,
@@ -26,22 +26,6 @@ module coreir_reg_arst #(parameter arst_posedge=1, parameter clk_posedge=1, para
 
 endmodule  // coreir_reg_arst
 
-module coreir_ult #(parameter width=1) (
-  input [width-1:0] in0,
-  input [width-1:0] in1,
-  output out
-);
-  assign out = in0 < in1;
-
-endmodule  // coreir_ult
-
-module coreir_const #(parameter value=1, parameter width=1) (
-  output [width-1:0] out
-);
-  assign out = value;
-
-endmodule  // coreir_const
-
 module coreir_mux #(parameter width=1) (
   input [width-1:0] in0,
   input [width-1:0] in1,
@@ -52,8 +36,33 @@ module coreir_mux #(parameter width=1) (
 
 endmodule  // coreir_mux
 
+module coreir_eq #(parameter width=1) (
+  input [width-1:0] in0,
+  input [width-1:0] in1,
+  output out
+);
+  assign out = in0 == in1;
+
+endmodule  // coreir_eq
+
+module coreir_const #(parameter value=1, parameter width=1) (
+  output [width-1:0] out
+);
+  assign out = value;
+
+endmodule  // coreir_const
+
+module corebit_and (
+  input in0,
+  input in1,
+  output out
+);
+  assign out = in0 & in1;
+
+endmodule  // corebit_and
+
 // Generated from commonlib.muxn(N:2, width:32)
-module muxn_U2 (
+module commonlib_muxn__N2__width32 (
   input [31:0] in_data_0,
   input [31:0] in_data_1,
   input [0:0] in_sel,
@@ -82,16 +91,87 @@ module muxn_U2 (
   assign _join__sel = in_sel[0];
 
 
-endmodule  // muxn_U2
+endmodule  // commonlib_muxn__N2__width32
 
-module coreir_eq #(parameter width=1) (
-  input [width-1:0] in0,
-  input [width-1:0] in1,
-  output out
+module Mux2xOutBits32 (
+  input [31:0] I0,
+  input [31:0] I1,
+  output [31:0] O,
+  input  S
 );
-  assign out = in0 == in1;
 
-endmodule  // coreir_eq
+
+  // Instancing generated Module: commonlib.muxn(N:2, width:32)
+  wire [31:0] coreir_commonlib_mux2x32_inst0__in_data_0;
+  wire [31:0] coreir_commonlib_mux2x32_inst0__in_data_1;
+  wire [0:0] coreir_commonlib_mux2x32_inst0__in_sel;
+  wire [31:0] coreir_commonlib_mux2x32_inst0__out;
+  commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0(
+    .in_data_0(coreir_commonlib_mux2x32_inst0__in_data_0),
+    .in_data_1(coreir_commonlib_mux2x32_inst0__in_data_1),
+    .in_sel(coreir_commonlib_mux2x32_inst0__in_sel),
+    .out(coreir_commonlib_mux2x32_inst0__out)
+  );
+
+  assign coreir_commonlib_mux2x32_inst0__in_data_0[31:0] = I0[31:0];
+
+  assign coreir_commonlib_mux2x32_inst0__in_data_1[31:0] = I1[31:0];
+
+  assign coreir_commonlib_mux2x32_inst0__in_sel[0] = S;
+
+  assign O[31:0] = coreir_commonlib_mux2x32_inst0__out[31:0];
+
+
+endmodule  // Mux2xOutBits32
+
+module Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 (
+  input  ASYNCRESET,
+  input  CE,
+  input  CLK,
+  input [31:0] I,
+  output [31:0] O
+);
+
+
+  wire [31:0] enable_mux__I0;
+  wire [31:0] enable_mux__I1;
+  wire [31:0] enable_mux__O;
+  wire  enable_mux__S;
+  Mux2xOutBits32 enable_mux(
+    .I0(enable_mux__I0),
+    .I1(enable_mux__I1),
+    .O(enable_mux__O),
+    .S(enable_mux__S)
+  );
+
+  // Instancing generated Module: coreir.reg_arst(width:32)
+  wire  value__arst;
+  wire  value__clk;
+  wire [31:0] value__in;
+  wire [31:0] value__out;
+  coreir_reg_arst #(.arst_posedge(1),.clk_posedge(1),.init(32'h00000000),.width(32)) value(
+    .arst(value__arst),
+    .clk(value__clk),
+    .in(value__in),
+    .out(value__out)
+  );
+
+  assign enable_mux__I0[31:0] = value__out[31:0];
+
+  assign enable_mux__I1[31:0] = I[31:0];
+
+  assign value__in[31:0] = enable_mux__O[31:0];
+
+  assign enable_mux__S = CE;
+
+  assign value__arst = ASYNCRESET;
+
+  assign value__clk = CLK;
+
+  assign O[31:0] = value__out[31:0];
+
+
+endmodule  // Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32
 
 module Mux2x32 (
   input [31:0] I0,
@@ -106,7 +186,7 @@ module Mux2x32 (
   wire [31:0] coreir_commonlib_mux2x32_inst0__in_data_1;
   wire [0:0] coreir_commonlib_mux2x32_inst0__in_sel;
   wire [31:0] coreir_commonlib_mux2x32_inst0__out;
-  muxn_U2 coreir_commonlib_mux2x32_inst0(
+  commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0(
     .in_data_0(coreir_commonlib_mux2x32_inst0__in_data_0),
     .in_data_1(coreir_commonlib_mux2x32_inst0__in_data_1),
     .in_sel(coreir_commonlib_mux2x32_inst0__in_sel),
@@ -153,37 +233,6 @@ module MuxWrapper_2_32 (
 
 
 endmodule  // MuxWrapper_2_32
-
-module Mux2xOutBits32 (
-  input [31:0] I0,
-  input [31:0] I1,
-  output [31:0] O,
-  input  S
-);
-
-
-  // Instancing generated Module: commonlib.muxn(N:2, width:32)
-  wire [31:0] coreir_commonlib_mux2x32_inst0__in_data_0;
-  wire [31:0] coreir_commonlib_mux2x32_inst0__in_data_1;
-  wire [0:0] coreir_commonlib_mux2x32_inst0__in_sel;
-  wire [31:0] coreir_commonlib_mux2x32_inst0__out;
-  muxn_U2 coreir_commonlib_mux2x32_inst0(
-    .in_data_0(coreir_commonlib_mux2x32_inst0__in_data_0),
-    .in_data_1(coreir_commonlib_mux2x32_inst0__in_data_1),
-    .in_sel(coreir_commonlib_mux2x32_inst0__in_sel),
-    .out(coreir_commonlib_mux2x32_inst0__out)
-  );
-
-  assign coreir_commonlib_mux2x32_inst0__in_data_0[31:0] = I0[31:0];
-
-  assign coreir_commonlib_mux2x32_inst0__in_data_1[31:0] = I1[31:0];
-
-  assign coreir_commonlib_mux2x32_inst0__in_sel[0] = S;
-
-  assign O[31:0] = coreir_commonlib_mux2x32_inst0__out[31:0];
-
-
-endmodule  // Mux2xOutBits32
 
 module MuxWithDefaultWrapper_2_32_8_0 (
   input [0:0] EN,
@@ -272,125 +321,6 @@ module MuxWithDefaultWrapper_2_32_8_0 (
 
 endmodule  // MuxWithDefaultWrapper_2_32_8_0
 
-module Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 (
-  input  ASYNCRESET,
-  input  CE,
-  input  CLK,
-  input [31:0] I,
-  output [31:0] O
-);
-
-
-  wire [31:0] enable_mux__I0;
-  wire [31:0] enable_mux__I1;
-  wire [31:0] enable_mux__O;
-  wire  enable_mux__S;
-  Mux2xOutBits32 enable_mux(
-    .I0(enable_mux__I0),
-    .I1(enable_mux__I1),
-    .O(enable_mux__O),
-    .S(enable_mux__S)
-  );
-
-  // Instancing generated Module: coreir.reg_arst(width:32)
-  wire  value__arst;
-  wire  value__clk;
-  wire [31:0] value__in;
-  wire [31:0] value__out;
-  coreir_reg_arst #(.arst_posedge(1),.clk_posedge(1),.init(32'h00000000),.width(32)) value(
-    .arst(value__arst),
-    .clk(value__clk),
-    .in(value__in),
-    .out(value__out)
-  );
-
-  assign enable_mux__I0[31:0] = value__out[31:0];
-
-  assign enable_mux__I1[31:0] = I[31:0];
-
-  assign value__in[31:0] = enable_mux__O[31:0];
-
-  assign enable_mux__S = CE;
-
-  assign value__arst = ASYNCRESET;
-
-  assign value__clk = CLK;
-
-  assign O[31:0] = value__out[31:0];
-
-
-endmodule  // Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32
-
-module ConfigRegister_32_8_32_0 (
-  output [31:0] O,
-  input  clk,
-  input [7:0] config_addr,
-  input [31:0] config_data,
-  input  config_en,
-  input  reset
-);
-
-
-  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET;
-  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE;
-  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK;
-  wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I;
-  wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O;
-  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_asyn
-c_reset_True_type_Bits_n_32_inst0(
-    .ASYNCRESET(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET),
-    .CE(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE),
-    .CLK(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK),
-    .I(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I),
-    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O)
-  );
-
-  wire  and_inst0__in0;
-  wire  and_inst0__in1;
-  wire  and_inst0__out;
-  corebit_and and_inst0(
-    .in0(and_inst0__in0),
-    .in1(and_inst0__in1),
-    .out(and_inst0__out)
-  );
-
-  // Instancing generated Module: coreir.const(width:8)
-  wire [7:0] const_0_8__out;
-  coreir_const #(.value(8'h00),.width(8)) const_0_8(
-    .out(const_0_8__out)
-  );
-
-  // Instancing generated Module: coreir.eq(width:8)
-  wire [7:0] coreir_eq_8_inst0__in0;
-  wire [7:0] coreir_eq_8_inst0__in1;
-  wire  coreir_eq_8_inst0__out;
-  coreir_eq #(.width(8)) coreir_eq_8_inst0(
-    .in0(coreir_eq_8_inst0__in0),
-    .in1(coreir_eq_8_inst0__in1),
-    .out(coreir_eq_8_inst0__out)
-  );
-
-  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET = reset;
-
-  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE = and_inst0__out;
-
-  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK = clk;
-
-  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I[31:0] = config_data[31:0];
-
-  assign O[31:0] = Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O[31:0];
-
-  assign and_inst0__in0 = coreir_eq_8_inst0__out;
-
-  assign and_inst0__in1 = config_en;
-
-  assign coreir_eq_8_inst0__in1[7:0] = const_0_8__out[7:0];
-
-  assign coreir_eq_8_inst0__in0[7:0] = config_addr[7:0];
-
-
-endmodule  // ConfigRegister_32_8_32_0
-
 module ConfigRegister_32_8_32_1 (
   output [31:0] O,
   input  clk,
@@ -406,8 +336,7 @@ module ConfigRegister_32_8_32_1 (
   wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK;
   wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I;
   wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O;
-  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_asyn
-c_reset_True_type_Bits_n_32_inst0(
+  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0(
     .ASYNCRESET(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET),
     .CE(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE),
     .CLK(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK),
@@ -460,6 +389,75 @@ c_reset_True_type_Bits_n_32_inst0(
 
 
 endmodule  // ConfigRegister_32_8_32_1
+
+module ConfigRegister_32_8_32_0 (
+  output [31:0] O,
+  input  clk,
+  input [7:0] config_addr,
+  input [31:0] config_data,
+  input  config_en,
+  input  reset
+);
+
+
+  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET;
+  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE;
+  wire  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK;
+  wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I;
+  wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O;
+  Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0(
+    .ASYNCRESET(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET),
+    .CE(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE),
+    .CLK(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK),
+    .I(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I),
+    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O)
+  );
+
+  wire  and_inst0__in0;
+  wire  and_inst0__in1;
+  wire  and_inst0__out;
+  corebit_and and_inst0(
+    .in0(and_inst0__in0),
+    .in1(and_inst0__in1),
+    .out(and_inst0__out)
+  );
+
+  // Instancing generated Module: coreir.const(width:8)
+  wire [7:0] const_0_8__out;
+  coreir_const #(.value(8'h00),.width(8)) const_0_8(
+    .out(const_0_8__out)
+  );
+
+  // Instancing generated Module: coreir.eq(width:8)
+  wire [7:0] coreir_eq_8_inst0__in0;
+  wire [7:0] coreir_eq_8_inst0__in1;
+  wire  coreir_eq_8_inst0__out;
+  coreir_eq #(.width(8)) coreir_eq_8_inst0(
+    .in0(coreir_eq_8_inst0__in0),
+    .in1(coreir_eq_8_inst0__in1),
+    .out(coreir_eq_8_inst0__out)
+  );
+
+  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__ASYNCRESET = reset;
+
+  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CE = and_inst0__out;
+
+  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__CLK = clk;
+
+  assign Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__I[31:0] = config_data[31:0];
+
+  assign O[31:0] = Register_has_ce_True_has_reset_False_has_async_reset_True_type_Bits_n_32_inst0__O[31:0];
+
+  assign and_inst0__in0 = coreir_eq_8_inst0__out;
+
+  assign and_inst0__in1 = config_en;
+
+  assign coreir_eq_8_inst0__in1[7:0] = const_0_8__out[7:0];
+
+  assign coreir_eq_8_inst0__in0[7:0] = config_addr[7:0];
+
+
+endmodule  // ConfigRegister_32_8_32_0
 
 module DummyCore (
   input  clk,
@@ -555,5 +553,4 @@ module DummyCore (
 
 
 endmodule  // DummyCore
-
 
