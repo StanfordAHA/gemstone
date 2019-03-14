@@ -49,6 +49,12 @@ class DummyCore(Core):
             self.wire(self.ports.config.write[0], reg.ports.config_en)
             self.wire(self.ports.reset, reg.ports.reset)
 
+    def configure(self, instr):
+        raise NotImplementedError()
+
+    def instr_type(self):
+        raise NotImplementedError()
+
     def inputs(self):
         return [self.ports.data_in_1b, self.ports.data_in_16b]
 
