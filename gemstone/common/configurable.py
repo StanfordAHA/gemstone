@@ -3,6 +3,8 @@ import mantle
 from ..generator.generator import Generator
 from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
+from .mux_wrapper import MuxWrapper
+from .zext_wrapper import ZextWrapper
 
 
 @magma.cache_definition
@@ -92,6 +94,13 @@ class Configurable(Generator):
             self.wire(self.ports.config.write[0], reg.ports.config_en)
             self.wire(self.ports.reset, reg.ports.reset)
 
+        def _zext(port, old_width, new_width):
+            if old_width == new_width:
+                return port
+            zext = ZextWrapper(old_width, new_width)
+            self.wire(port, zext.ports.I)
+            return zext.ports.O
+
         # read_config_data output.
         num_config_reg = len(config_names)
         if num_config_reg > 1:
@@ -106,16 +115,12 @@ class Configurable(Generator):
 
             for idx, config_name in enumerate(config_names):
                 reg = self.registers[config_name]
-                zext = ZextWrapper(reg.width, self.config_data_width)
-                self.wire(reg.ports.O, zext.ports.I)
-                zext_out = zext.ports.O
+                zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
         elif num_config_reg == 1:
             config_name = config_names[0]
             reg = self.registers[config_name]
-            zext = ZextWrapper(reg.width, self.config_data_width)
-            self.wire(reg.ports.O, zext.ports.I)
-            zext_out = zext.ports.O
+            zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
             self.wire(zext_out, self.ports.read_config_data)
 
 
