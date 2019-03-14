@@ -6,16 +6,14 @@ from .mux_with_default import MuxWithDefaultWrapper
 
 class DummyCore(Core):
     def __init__(self):
-        super().__init__()
+        super().__init__(8, 32)
+
         self.add_ports(
             data_in_16b=magma.In(magma.Bits(16)),
             data_out_16b=magma.Out(magma.Bits(16)),
             data_in_1b=magma.In(magma.Bits(1)),
             data_out_1b=magma.Out(magma.Bits(1)),
-            clk=magma.In(magma.Clock),
-            reset=magma.In(magma.AsyncReset),
             config=magma.In(ConfigurationType(8, 32)),
-            read_config_data=magma.Out(magma.Bits(32))
         )
 
         # Dummy core just passes inputs through to outputs
@@ -52,7 +50,7 @@ class DummyCore(Core):
     def configure(self, instr):
         raise NotImplementedError()
 
-    def instr_type(self):
+    def instruction_type(self):
         raise NotImplementedError()
 
     def inputs(self):
