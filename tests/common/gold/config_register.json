@@ -89,10 +89,10 @@
         "connections":[
           ["self.I","Mux2xOutBits32_inst0.I0"],
           ["const_0_32.out","Mux2xOutBits32_inst0.I1"],
-          ["enable_mux.I1","Mux2xOutBits32_inst0.O"],
+          ["value.in","Mux2xOutBits32_inst0.O"],
           ["self.RESET","Mux2xOutBits32_inst0.S"],
           ["value.out","enable_mux.I0"],
-          ["value.in","enable_mux.O"],
+          ["self.I","enable_mux.I1"],
           ["self.CE","enable_mux.S"],
           ["value.clk","self.CLK"],
           ["value.out","self.O"]
