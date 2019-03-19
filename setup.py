@@ -13,5 +13,6 @@ setup(
         "mantle",
         "fault",
         "ordered_set",
+        "hwtypes",
     ],
 )
