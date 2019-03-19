@@ -22,7 +22,7 @@ install:
 
 script:
     - pytest --codestyle
-             --cov canal
+             --cov gemstone
              --ignore=filecmp.py
              --ignore=Genesis2/
              -v --cov-report term-missing tests
