@@ -10,7 +10,7 @@ from .zext_wrapper import ZextWrapper
 @magma.cache_definition
 def _generate_config_register(width, addr, addr_width,
                               data_width, use_config_en):
-    T = magma.Bits(width)
+    T = magma.Bits[width]
 
     class _ConfigRegister(magma.Circuit):
         name = f"ConfigRegister_{width}_{addr_width}_{data_width}_{addr}"
@@ -18,8 +18,8 @@ def _generate_config_register(width, addr, addr_width,
             "clk", magma.In(magma.Clock),
             "reset", magma.In(magma.AsyncReset),
             "O", magma.Out(T),
-            "config_addr", magma.In(magma.Bits(addr_width)),
-            "config_data", magma.In(magma.Bits(data_width)),
+            "config_addr", magma.In(magma.Bits[addr_width]),
+            "config_data", magma.In(magma.Bits[data_width]),
         ]
         if use_config_en:
             IO.extend(["config_en", magma.In(magma.Bit)])
@@ -42,10 +42,10 @@ def _generate_config_register(width, addr, addr_width,
 
 
 def ConfigurationType(addr_width, data_width):
-    return magma.Tuple(config_addr=magma.Bits(addr_width),
-                       config_data=magma.Bits(data_width),
-                       read=magma.Bits(1),
-                       write=magma.Bits(1)
+    return magma.Tuple(config_addr=magma.Bits[addr_width],
+                       config_data=magma.Bits[data_width],
+                       read=magma.Bits[1],
+                       write=magma.Bits[1]
                        )
 
 
@@ -64,7 +64,7 @@ class Configurable(Generator):
         self.add_ports(
             clk=magma.In(magma.Clock),
             reset=magma.In(magma.AsyncReset),
-            read_config_data=magma.Out(magma.Bits(config_data_width)),
+            read_config_data=magma.Out(magma.Bits[config_data_width]),
         )
 
     def add_config(self, name, width):
@@ -136,7 +136,7 @@ class ConfigRegister(Generator):
         self.addr_width = None
         self.data_width = None
 
-        T = magma.Bits(self.width)
+        T = magma.Bits[self.width]
 
         self.add_ports(
             clk=magma.In(magma.Clock),
@@ -162,11 +162,11 @@ class ConfigRegister(Generator):
 
     def set_addr_width(self, addr_width):
         self.addr_width = addr_width
-        self.add_port("config_addr", magma.In(magma.Bits(self.addr_width)))
+        self.add_port("config_addr", magma.In(magma.Bits[self.addr_width]))
 
     def set_data_width(self, data_width):
         self.data_width = data_width
-        self.add_port("config_data", magma.In(magma.Bits(self.data_width)))
+        self.add_port("config_data", magma.In(magma.Bits[self.data_width]))
 
     def circuit(self):
         return _generate_config_register(self.width, self.addr, self.addr_width,

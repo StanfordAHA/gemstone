@@ -9,8 +9,8 @@ def _generate_zext_wrapper(in_width, out_width):
     class _ZextWrapper(magma.Circuit):
         name = f"ZextWrapper_{in_width}_{out_width}"
         IO = [
-            "I", magma.In(magma.Bits(in_width)),
-            "O", magma.Out(magma.Bits(out_width)),
+            "I", magma.In(magma.Bits[in_width]),
+            "O", magma.Out(magma.Bits[out_width]),
         ]
 
         @classmethod
@@ -33,8 +33,8 @@ class ZextWrapper(Generator):
         self.out_width = out_width
 
         self.add_ports(
-            I=magma.In(magma.Bits(self.in_width)),
-            O=magma.Out(magma.Bits(self.out_width)),
+            I=magma.In(magma.Bits[self.in_width]),
+            O=magma.Out(magma.Bits[self.out_width]),
         )
 
     def circuit(self):

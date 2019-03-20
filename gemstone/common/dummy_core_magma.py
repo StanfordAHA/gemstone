@@ -9,10 +9,10 @@ class DummyCore(ConfigurableCore):
         super().__init__(8, 32)
 
         self.add_ports(
-            data_in_16b=magma.In(magma.Bits(16)),
-            data_out_16b=magma.Out(magma.Bits(16)),
-            data_in_1b=magma.In(magma.Bits(1)),
-            data_out_1b=magma.Out(magma.Bits(1)),
+            data_in_16b=magma.In(magma.Bits[16]),
+            data_out_16b=magma.Out(magma.Bits[16]),
+            data_in_1b=magma.In(magma.Bits[1]),
+            data_out_1b=magma.Out(magma.Bits[1]),
             config=magma.In(ConfigurationType(8, 32)),
         )
 

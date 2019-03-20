@@ -36,10 +36,10 @@ def test_generator(mode):
     expected_ports = {
         "clk": m.Out(m.Bit),
         "reset": m.Out(m.Bit),
-        "in0": m.Out(m.Bits(16)),
-        "in1": m.Out(m.Bits(16)),
+        "in0": m.Out(m.Bits[16]),
+        "in1": m.Out(m.Bits[16]),
         "sel": m.Out(m.Bit),
-        "out": m.In(m.Bits(16)),
+        "out": m.In(m.Bits[16]),
     }
     for name, type_ in module.IO.ports.items():
         assert type(expected_ports[name]) == type(type_)
@@ -79,6 +79,6 @@ def test_main(capsys):
     out, _ = capsys.readouterr()
     expected_out = f"""\
 Running genesis cmd 'Genesis2.pl -parse -generate -top test_run_genesis -input {''.join(INFILES)} -parameter test_run_genesis.width='{w}''
-test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits({w})), in1: In(Bits({w})), sel: In(Bit), out: Out(Bits({w})))
+test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits[{w}]), in1: In(Bits[{w}]), sel: In(Bit), out: Out(Bits[{w}]))
 """  # nopep8
     assert out == expected_out
