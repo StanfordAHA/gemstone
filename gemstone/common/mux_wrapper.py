@@ -7,17 +7,17 @@ from ..generator.from_magma import FromMagma
 @magma.cache_definition
 def _generate_mux_wrapper(height, width):
     sel_bits = magma.bitutils.clog2(height)
-    T = magma.Bits(width)
+    T = magma.Bits[width]
 
     class _MuxWrapper(magma.Circuit):
         name = f"MuxWrapper_{height}_{width}"
         in_height = max(1, height)
         IO = [
-            "I", magma.In(magma.Array(in_height, T)),
+            "I", magma.In(magma.Array[in_height, T]),
             "O", magma.Out(T),
         ]
         if height > 1:
-            IO.extend(["S", magma.In(magma.Bits(sel_bits))])
+            IO.extend(["S", magma.In(magma.Bits[sel_bits])])
 
         @classmethod
         def definition(io):
@@ -41,13 +41,13 @@ class MuxWrapper(Generator):
         self.height = height
         self.width = width
 
-        T = magma.Bits(self.width)
+        T = magma.Bits[self.width]
 
         # In the case that @height <= 1, we make this circuit a simple
         # pass-through circuit.
         if self.height <= 1:
             self.add_ports(
-                I=magma.In(magma.Array(1, T)),
+                I=magma.In(magma.Array[1, T]),
                 O=magma.Out(T),
             )
             #self.wire(self.ports.I[0], self.ports.O)
@@ -60,8 +60,8 @@ class MuxWrapper(Generator):
         self.sel_bits = magma.bitutils.clog2(self.height)
 
         self.add_ports(
-            I=magma.In(magma.Array(self.height, T)),
-            S=magma.In(magma.Bits(self.sel_bits)),
+            I=magma.In(magma.Array[self.height, T]),
+            S=magma.In(magma.Bits[self.sel_bits]),
             O=magma.Out(T),
         )
 

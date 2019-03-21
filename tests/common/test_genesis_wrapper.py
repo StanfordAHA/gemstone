@@ -36,10 +36,10 @@ def test_generator(mode):
     expected_ports = {
         "clk": m.Out(m.Bit),
         "reset": m.Out(m.Bit),
-        "in0": m.Out(m.Bits(16)),
-        "in1": m.Out(m.Bits(16)),
+        "in0": m.Out(m.Bits[16]),
+        "in1": m.Out(m.Bits[16]),
         "sel": m.Out(m.Bit),
-        "out": m.In(m.Bits(16)),
+        "out": m.In(m.Bits[16]),
     }
     for name, type_ in module.IO.ports.items():
         assert type(expected_ports[name]) == type(type_)
