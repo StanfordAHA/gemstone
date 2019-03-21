@@ -44,7 +44,7 @@ class MuxWithDefaultWrapper(Generator):
 
         T = magma.Bits[self.width]
         self.add_ports(
-            I=magma.In(magma.Array(self.num_inputs, T)),
+            I=magma.In(magma.Array[self.num_inputs, T]),
             S=magma.In(magma.Bits[self.sel_bits]),
             EN=magma.In(magma.Bits[1]),
             O=magma.Out(T),

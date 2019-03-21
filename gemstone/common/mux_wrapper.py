@@ -13,7 +13,7 @@ def _generate_mux_wrapper(height, width):
         name = f"MuxWrapper_{height}_{width}"
         in_height = max(1, height)
         IO = [
-            "I", magma.In(magma.Array(in_height, T)),
+            "I", magma.In(magma.Array[in_height, T]),
             "O", magma.Out(T),
         ]
         if height > 1:
@@ -47,7 +47,7 @@ class MuxWrapper(Generator):
         # pass-through circuit.
         if self.height <= 1:
             self.add_ports(
-                I=magma.In(magma.Array(1, T)),
+                I=magma.In(magma.Array[1, T]),
                 O=magma.Out(T),
             )
             #self.wire(self.ports.I[0], self.ports.O)
@@ -60,7 +60,7 @@ class MuxWrapper(Generator):
         self.sel_bits = magma.bitutils.clog2(self.height)
 
         self.add_ports(
-            I=magma.In(magma.Array(self.height, T)),
+            I=magma.In(magma.Array[self.height, T]),
             S=magma.In(magma.Bits[self.sel_bits]),
             O=magma.Out(T),
         )
