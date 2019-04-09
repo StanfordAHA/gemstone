@@ -2,7 +2,8 @@ import magma
 import mantle
 from ..generator.generator import Generator
 from ..generator.from_magma import FromMagma
-
+from ..generator.from_verilog import FromVerilog
+import math
 
 @magma.cache_definition
 def _generate_mux_wrapper(height, width):
@@ -24,13 +25,143 @@ def _generate_mux_wrapper(height, width):
             if height <= 1:
                 magma.wire(io.I[0], io.O)
             else:
-                mux = mantle.DefineMux(height, width)()
+                f = open("one_hot_mux.sv", "w")
+                num_sel = math.ceil(math.log(height,2))
+                num_inputs = math.pow(2, num_sel)
+                num_muxes = num_inputs
+                delta = num_inputs - height
+                
+                f.write("module onehot_mux_hier ( \n")
+                
+                for i in range(height):
+                   f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+                
+                f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
+                f.write(f'\toutput logic [{width-1} : 0] O); \n')
+                
+                f.write(f'\t\nlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
+                
+                f.write('\nprecoder u_precoder ( \n')
+                f.write('\t.S(S), \n')
+                f.write('\t.out_sel(out_sel)); \n')
+                
+                f.write(f'\nmux_logic u_mux_logic ( \n')
+                for i in range(height):
+                   f.write(f'\t.I{i} (I{i}),\n')
+                f.write(f'\t.out_sel(out_sel), \n')
+                f.write(f'\t.O(O)); \n')
+                
+                f.write(f'\nendmodule \n')
+                
+                f.write('\nmodule precoder ( \n') 
+                f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
+                f.write(f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n')
+                
+                f.write(f'\nalways_comb begin: mux_sel \n')
+                f.write(f'\tcase (S) \n')
+                for i in range(height):
+                    data = format(int(math.pow(2,int(i))), 'b').zfill(int(num_inputs))
+                    print("Data is", data)
+                    f.write(f'\t\t{num_sel}\'h{i}    :   out_sel = {int(num_inputs)}\'b{data}; \n')
+                f.write(f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0; \n''')
+                f.write(f'\tendcase \n')
+                f.write(f'end \n')
+                f.write(f'\nendmodule \n')
+                
+                f.write('\nmodule mux_logic ( \n') 
+                f.write(f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n')
+                for i in range(height):
+                    f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+                f.write(f'\toutput logic [{width-1} : 0] O); \n')
+                
+                f.write(f'\nalways_comb begin: out_sel_logic \n')
+                f.write(f'\tcase (out_sel) \n')
+                for i in range(height):
+                    #data =  bin(int(math.pow(2,int(i))))
+                    data = format(int(math.pow(2,int(i))), 'b').zfill(int(num_inputs))
+                    
+                    f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = I{i}; \n')
+                f.write(f'\t\tdefault :   O = I0; \n''')
+                f.write(f'\tendcase \n')
+                f.write(f'end \n')
+                
+                f.write("endmodule \n")
+
+                #gen_aoimux()
+                f.close()
+                mux = FromVerilog("./one_hot_mux.sv") 
+                #mux = mantle.DefineMux(height, width)()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
                 mux_in = io.S if sel_bits > 1 else io.S[0]
                 magma.wire(mux_in, mux.S)
                 magma.wire(mux.O, io.O)
 
+        def gen_aoimux():
+            #height = self.height 
+            f = open("one_hot_mux.sv", "w")
+            #width = self.width 
+            num_sel = math.ceil(math.log(height,2))
+            num_inputs = math.pow(2, num_sel)
+            num_muxes = num_inputs
+            delta = num_inputs - height
+            
+            f.write("module onehot_mux_hier ( \n")
+            
+            for i in range(height):
+               f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+            
+            f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
+            f.write(f'\toutput logic [{width-1} : 0] O); \n')
+            
+            f.write(f'\t\nlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
+            
+            f.write('\nprecoder u_precoder ( \n')
+            f.write('\t.S(S), \n')
+            f.write('\t.out_sel(out_sel)); \n')
+            
+            f.write(f'\nmux_logic u_mux_logic ( \n')
+            for i in range(height):
+               f.write(f'\t.I{i} (I{i}),\n')
+            f.write(f'\t.out_sel(out_sel), \n')
+            f.write(f'\t.O(O)); \n')
+            
+            f.write(f'\nendmodule \n')
+            
+            f.write('\nmodule precoder ( \n') 
+            f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
+            f.write(f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n')
+            
+            f.write(f'\nalways_comb begin: mux_sel \n')
+            f.write(f'\tcase (S) \n')
+            for i in range(height):
+                data = format(int(math.pow(2,int(i))), 'b').zfill(int(num_inputs))
+                print("Data is", data)
+                f.write(f'\t\t{num_sel}\'h{i}    :   out_sel = {int(num_inputs)}\'b{data}; \n')
+            f.write(f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0; \n''')
+            f.write(f'\tendcase \n')
+            f.write(f'end \n')
+            f.write(f'\nendmodule \n')
+            
+            f.write('\nmodule mux_logic ( \n') 
+            f.write(f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n')
+            for i in range(height):
+                f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+            f.write(f'\toutput logic [{width-1} : 0] O); \n')
+            
+            f.write(f'\nalways_comb begin: out_sel_logic \n')
+            f.write(f'\tcase (out_sel) \n')
+            for i in range(height):
+                #data =  bin(int(math.pow(2,int(i))))
+                data = format(int(math.pow(2,int(i))), 'b').zfill(int(num_inputs))
+                
+                f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = I{i}; \n')
+            f.write(f'\t\tdefault :   O = I0; \n''')
+            f.write(f'\tendcase \n')
+            f.write(f'end \n')
+            
+            f.write("endmodule \n")
+        
     return _MuxWrapper
 
 
