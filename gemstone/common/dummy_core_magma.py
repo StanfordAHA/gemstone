@@ -59,5 +59,12 @@ class DummyCore(ConfigurableCore):
     def outputs(self):
         return [self.ports.data_out_1b, self.ports.data_out_16b]
 
+    def eval(self, **kargs):
+        # kargs is str -> int
+        assert "data_in_16b" in kargs
+        assert "data_in_1b" in kargs
+        return {"data_out_16b": kargs["data_in_16b"],
+                "data_out_1b": kargs["data_in_1b"]}
+
     def name(self):
         return "DummyCore"

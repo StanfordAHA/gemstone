@@ -48,7 +48,7 @@ class Core(Generator):
     def configure(self, addr, data):
         pass
 
-    def eval(self):
+    def eval(self, **kargs):
         return 0
 
 
@@ -87,5 +87,5 @@ class CoreFeature(Generator):
     def configure(self, addr, data):
         pass
 
-    def eval(self):
+    def eval(self, **kargs):
         return 0
