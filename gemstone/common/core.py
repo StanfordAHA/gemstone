@@ -45,6 +45,11 @@ class Core(Generator):
         priority_minor = self.DEFAULT_PRIORITY
         # this can be a list as well
         return PnRTag(tag, priority_major, priority_minor)
+    def configure(self, addr, data):
+        pass
+
+    def eval(self):
+        return 0
 
 
 class ConfigurableCore(Core, Configurable):
@@ -78,3 +83,9 @@ class CoreFeature(Generator):
 
     def index(self):
         return self.__index
+
+    def configure(self, addr, data):
+        pass
+
+    def eval(self):
+        return 0
