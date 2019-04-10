@@ -47,7 +47,7 @@ class DummyCore(ConfigurableCore):
             self.wire(self.ports.config.write[0], reg.ports.config_en)
             self.wire(self.ports.reset, reg.ports.reset)
 
-    def configure(self, instr):
+    def get_config_bitstream(self, instr):
         raise NotImplementedError()
 
     def instruction_type(self):
@@ -59,9 +59,9 @@ class DummyCore(ConfigurableCore):
     def outputs(self):
         return [self.ports.data_out_1b, self.ports.data_out_16b]
 
-    def eval(self, **kargs):
+    def eval_model(self, **kargs):
         # kargs is str -> int
-        value_16 = kargs["data_in_16b" if "data_in_16b" in kargs else 0
+        value_16 = kargs["data_in_16b"] if "data_in_16b" in kargs else 0
         value_1 = kargs["data_in_1b"] if "data_in_1b" in kargs else 0
         return {"data_out_16b": value_16,
                 "data_out_1b": value_1}
