@@ -61,10 +61,10 @@ class DummyCore(ConfigurableCore):
 
     def eval(self, **kargs):
         # kargs is str -> int
-        assert "data_in_16b" in kargs
-        assert "data_in_1b" in kargs
-        return {"data_out_16b": kargs["data_in_16b"],
-                "data_out_1b": kargs["data_in_1b"]}
+        value_16 = kargs["data_in_16b" if "data_in_16b" in kargs else 0
+        value_1 = kargs["data_in_1b"] if "data_in_1b" in kargs else 0
+        return {"data_out_16b": value_16,
+                "data_out_1b": value_1}
 
     def name(self):
         return "DummyCore"
