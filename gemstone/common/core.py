@@ -49,7 +49,7 @@ class Core(Generator):
         pass
 
     def eval(self, **kargs):
-        return 0
+        return {}
 
 
 class ConfigurableCore(Core, Configurable):
@@ -88,4 +88,4 @@ class CoreFeature(Generator):
         pass
 
     def eval(self, **kargs):
-        return 0
+        return {}
