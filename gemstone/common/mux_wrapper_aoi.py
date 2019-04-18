@@ -76,7 +76,6 @@ def _generate_mux_wrapper(height, width):
                 f.write(f'\nalways_comb begin: out_sel_logic \n')
                 f.write(f'\tcase (out_sel) \n')
                 for i in range(height):
-                    #data =  bin(int(math.pow(2,int(i))))
                     data = format(int(math.pow(2,int(i))), 'b').zfill(int(num_inputs))
                     
                     f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = I{i}; \n')
@@ -87,11 +86,7 @@ def _generate_mux_wrapper(height, width):
                 
                 f.write("endmodule \n")
                 f.close()
-                #gen_aoimux()
-                #mux = FromVerilog("./mux.sv") 
-                #mux = FromVerilog("./mux.sv", target_modules=["mux"]) 
                 mux = magma.DefineFromVerilogFile("./mux_aoi.sv", target_modules=["mux"])[0]()
-                #mux = magma.DefineFromVerilogFile("./mux.sv", target_modules=["mux"])[0]
                 #mux = mantle.DefineMux(height, width)()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
