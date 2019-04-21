@@ -50,3 +50,48 @@ def or_reduction(gen: Generator, sub_circuit_name: str, signal_name: str,
     gen.wire(read_data_reduce_or.ports.O, pass_through)
 
     return gen.ports[input_name]
+
+
+def replace(parent: Generator, old_gen: Generator, new_gen: Generator):
+    """
+    replace the old_gen with the new generator. The interfaces of
+    @old_gen has to be the same as the @new_gen
+
+    :param parent: parent generator that holds the old_gen
+    :param old_gen: target generator to be replaced
+    :param new_gen: new generator to use
+    :return: None
+    """
+    # we first make sure that the interfaces are the same
+    assert len(old_gen.ports) == len(new_gen.ports)
+    for port_name, old_port in old_gen.ports.items():
+        assert port_name in new_gen.ports
+        new_port = new_gen.ports[port_name]
+        assert old_port.base_type() == new_port.base_type()
+
+    # looping through the wires in parent that need to be replaced
+    wires = set()
+    for conn_from, conn_to in parent.wires:
+        if conn_from.owner() == old_gen:
+            wires.add((conn_from, conn_to))
+        if conn_to.owner() == old_gen:
+            wires.add((conn_from, conn_to))
+
+    # remove the wires
+    for conn_from, conn_to in wires:
+        parent.remove_wire(conn_from, conn_to)
+
+    # adding wires back using the new generator
+    for conn_from, conn_to in wires:
+        if conn_from.owner() == old_gen:
+            next_port = conn_to
+            current_port = conn_from
+        else:
+            assert conn_to.owner() == old_gen
+            next_port = conn_from
+            current_port = conn_to
+
+        # reconstructing the port based on the ops stored in the original port
+        # slices
+        new_port = current_port.get_port(old_gen)
+        parent.wire(new_port, next_port)
