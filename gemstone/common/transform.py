@@ -85,13 +85,13 @@ def replace(parent: Generator, old_gen: Generator, new_gen: Generator):
     for conn_from, conn_to in wires:
         if conn_from.owner() == old_gen:
             next_port = conn_to
-            current_port = conn_from
+            current_port = conn_from.clone()
         else:
             assert conn_to.owner() == old_gen
             next_port = conn_from
-            current_port = conn_to
+            current_port = conn_to.clone()
 
         # reconstructing the port based on the ops stored in the original port
         # slices
-        new_port = current_port.get_port(old_gen)
+        new_port = current_port.get_port(new_gen.ports)
         parent.wire(new_port, next_port)
