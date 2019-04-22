@@ -38,7 +38,7 @@ class MuxWrapper(Generator):
     def __init__(self, height, width, name=None):
         super().__init__(name)
 
-        self.height = height
+        self.height = max(height, 1)
         self.width = width
 
         T = magma.Bits[self.width]
