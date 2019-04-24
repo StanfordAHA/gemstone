@@ -28,3 +28,4 @@ We imagine a few important paradigms of passes that would come as part of the ge
 - Replacement: a replacement pass would iterate the graph (again using the `children()` method) and replace instances satisfying some condition (the most prevelant condition being that an instance is that of a specific class) with another instance with the same interface. For example, if we may use a standard library implementation of a common module (e.g. mux, register) that should be replaced with a technology specific implementation.
 - Wrapping: a wrapping pass would iterate the graph and wrap each generator satisfying some condition using another common generator.
 - Insertion: an insertion pass would iterate over a set of wires and replace the wire with a new instance (of some generator) that would would sit between the previous source and destination ports of the original wire.
+
