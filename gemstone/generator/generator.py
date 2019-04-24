@@ -24,9 +24,8 @@ class Generator(ABC):
             raise ValueError(f"{name} is already a port")
         self.ports[name] = PortReference(self, name, T)
 
-    def remove_port(self, port: PortReference):
+    def remove_port(self, port_name: str):
         # first remove it from self.ports
-        port_name = port._name
         assert port_name in self.ports
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
