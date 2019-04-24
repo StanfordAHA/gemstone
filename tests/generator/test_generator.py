@@ -21,6 +21,6 @@ def test_remove_port():
     gen = Gen()
     assert len(gen.wires) == 1
     # now remove it
-    gen.remove_port(gen.ports.port0)
+    gen.remove_port("port0")
     assert "port0" not in gen.ports
     assert len(gen.wires) == 0
