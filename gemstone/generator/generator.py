@@ -32,9 +32,9 @@ class Generator(ABC):
         # the only thing won't change is the port name
         wires_to_remove = set()
         for conn1, conn2 in self.wires:
-            if conn1._name == port_name:
+            if conn1._name == port_name and conn1.owner() == self:
                 wires_to_remove.add((conn1, conn2))
-            elif conn2._name == port_name:
+            elif conn2._name == port_name and conn2.owner() == self:
                 wires_to_remove.add((conn1, conn2))
         for conn1, conn2 in wires_to_remove:
             self.remove_wire(conn1, conn2)
