@@ -37,7 +37,7 @@ install:
     # END GENESIS2 INSTALL
 
 script:
-    - pytest --codestyle
+    - pytest --codestyle gemstone
              --cov gemstone
              --ignore=filecmp.py
              --ignore=Genesis2/
