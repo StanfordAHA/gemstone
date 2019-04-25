@@ -140,4 +140,4 @@ class AOIConstMuxWrapper(Generator):
         return _generate_mux_wrapper(self.height, self.width)
 
     def name(self):
-        return f"MuxWrapper_{self.height}_{self.width}"
+        return f"MuxWrapperAOIConst_{self.height}_{self.width}"
