@@ -1,12 +1,22 @@
 import magma
 from ..generator.generator import Generator
 import math
+import enum
+
+
+@enum.unique
+class AOIMuxType(enum.Enum):
+    Regular = enum.auto()
+    Const = enum.auto()
 
 
 @magma.cache_definition
-def _generate_mux_wrapper(height, width):
-    # 1-bit extra for the constant
-    sel_bits = magma.bitutils.clog2(height)
+def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
+    if mux_type == mux_type.Const:
+        # 1-bit extra for the constant
+        sel_bits = magma.bitutils.clog2(height + 1)
+    else:
+        sel_bits = magma.bitutils.clog2(height)
     T = magma.Bits[width]
 
     class _MuxWrapper(magma.Circuit):
@@ -24,9 +34,13 @@ def _generate_mux_wrapper(height, width):
             if height <= 1:
                 magma.wire(io.I[0], io.O)
             else:
-                f = open("mux_aoi.sv", "w")
-                # 1-bit extra for the constant
-                num_sel = math.ceil(math.log(height, 2))
+                if mux_type == mux_type.Const:
+                    f = open("mux_aoi_const.sv", "w")
+                    # 1-bit extra for the constant
+                    num_sel = math.ceil(math.log(height + 1, 2))
+                else:
+                    f = open("mux_aoi.sv", "w")
+                    num_sel = math.ceil(math.log(height, 2))
                 num_inputs = math.pow(2, num_sel)
 
                 f.write("module mux ( \n")
@@ -63,9 +77,14 @@ def _generate_mux_wrapper(height, width):
                 for i in range(height):
                     data = format(int(math.pow(2, int(i))),
                                   'b').zfill(int(num_inputs))
+                    data0 = format(int(math.pow(2, int(height))),
+                                   'b').zfill(int(num_inputs))
                     f.write(f'\t\t{num_sel}\'d{i}    :   '
                             f'out_sel = {int(num_inputs)}\'b{data}; \n')
-                f.write(f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;'
+                if mux_type == AOIMuxType.Const:
+                    f.write(f'\t\t{num_sel}\'d{height}    :'
+                            f'   out_sel = {int(num_inputs)}\'b{data0}; \n')
+                f.write(f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0; '
                         f'\n''')
                 f.write(f'\tendcase \n')
                 f.write(f'end \n')
@@ -85,14 +104,24 @@ def _generate_mux_wrapper(height, width):
 
                     f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = I{i};'
                             f'\n')
+                if mux_type == AOIMuxType.Const:
+                    data = format(int(math.pow(2, int(height))),
+                                  'b').zfill(int(num_inputs))
+                    f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = 0; \n')
                 f.write(f'\t\tdefault :   O = 0; \n''')
                 f.write(f'\tendcase \n')
                 f.write(f'end \n')
 
                 f.write("endmodule \n")
                 f.close()
-                mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
-                                                  target_modules=["mux"])[0]()
+                if mux_type == AOIMuxType.Const:
+                    mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
+                                                      target_modules=["mux"
+                                                                      ])[0]()
+                else:
+                    mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
+                                                      target_modules=["mux"
+                                                                      ])[0]()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
                 mux_in = io.S if sel_bits > 1 else io.S[0]
@@ -103,11 +132,12 @@ def _generate_mux_wrapper(height, width):
 
 
 class AOIMuxWrapper(Generator):
-    def __init__(self, height, width, name=None):
+    def __init__(self, height, width, mux_type, name=None):
         super().__init__(name)
 
         self.height = height
         self.width = width
+        self.mux_type: AOIMuxType = mux_type
 
         T = magma.Bits[self.width]
 
@@ -120,9 +150,12 @@ class AOIMuxWrapper(Generator):
             )
             self.sel_bits = 0
             return
-        # 1-bit extra for the constant
-        self.sel_bits = magma.bitutils.clog2(self.height)
 
+        if mux_type == AOIMuxType.Const:
+            # 1-bit extra for the constant
+            self.sel_bits = magma.bitutils.clog2(self.height + 1)
+        else:
+            self.sel_bits = magma.bitutils.clog2(self.height)
         self.add_ports(
             I=magma.In(magma.Array[self.height, T]),
             S=magma.In(magma.Bits[self.sel_bits]),
@@ -130,7 +163,7 @@ class AOIMuxWrapper(Generator):
         )
 
     def circuit(self):
-        return _generate_mux_wrapper(self.height, self.width)
+        return _generate_mux_wrapper(self.height, self.width, self.mux_type)
 
     def name(self):
-        return f"MuxWrapperAOI_{self.height}_{self.width}"
+        return f"MuxWrapperAOI_{self.height}_{self.width}_{self.mux_type.name}"

@@ -4,7 +4,8 @@ import tempfile
 from hwtypes import BitVector
 import fault
 import fault.random
-from gemstone.common.mux_wrapper_aoi_common import AOIMuxWrapperCommon
+from gemstone.common.mux_wrapper_aoi import AOIMuxWrapper, AOIMuxType
+
 
 @pytest.mark.parametrize('height,width', [(randint(2, 10), randint(1, 32))
                                           for _ in range(5)])
@@ -17,10 +18,11 @@ def test_aoi_mux_wrapper(height, width):
     Note that we do not check the behavior with sel >= height, because this is
     undefined behavior.
     """
-    mux = AOIMuxWrapperCommon(height, width, 0)
+    mux = AOIMuxWrapper(height, width, AOIMuxType.Regular)
     assert mux.height == height
     assert mux.width == width
-    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_WithConst_0"
+    assert mux.name() == \
+        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Regular.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)
@@ -50,10 +52,11 @@ def test_aoi_const_mux_wrapper(height, width):
     Note that we do not check the behavior with sel > height, because this is
     undefined behavior.
     """
-    mux = AOIMuxWrapperCommon(height, width, 1)
+    mux = AOIMuxWrapper(height, width, AOIMuxType.Const)
     assert mux.height == height
     assert mux.width == width
-    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_WithConst_1"
+    assert mux.name() == \
+        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Const.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)
