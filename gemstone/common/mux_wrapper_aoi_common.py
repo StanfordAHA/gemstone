@@ -109,8 +109,7 @@ def _generate_mux_wrapper(height, width, muxtype):
                 f.close()
                 if (muxtype):
                     mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
-                                                      target_modules= \
-                                                      ["mux"])[0]()
+                                                      target_modules=["mux"])[0]() 
                 else:
                     mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
                                                       target_modules=["mux"])[0]()
