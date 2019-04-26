@@ -8,6 +8,7 @@ import mantle
 
 
 class Core(Generator):
+    DEFAULT_PRIORITY = 20
     @abstractmethod
     def inputs(self):
         pass
@@ -18,6 +19,12 @@ class Core(Generator):
 
     def features(self) -> List[Union["Core", "CoreFeature"]]:
         return [self]
+
+    def pnr_info(self):
+        tag = self.name()[0]
+        priority_major = self.DEFAULT_PRIORITY
+        priority_minor = self.DEFAULT_PRIORITY
+        return tag, (priority_major, priority_minor)
 
 
 class ConfigurableCore(Core, Configurable):
