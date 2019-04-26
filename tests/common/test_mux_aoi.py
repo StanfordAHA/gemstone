@@ -20,7 +20,7 @@ def test_aoi_mux_wrapper(height, width):
     mux = AOIMuxWrapperCommon(height, width, 0)
     assert mux.height == height
     assert mux.width == width
-    assert mux.name() == f"MuxWrapperAOICommon_{height}_{width}_WithConst_0"
+    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_WithConst_0"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)
@@ -53,7 +53,7 @@ def test_aoi_const_mux_wrapper(height, width):
     mux = AOIMuxWrapperCommon(height, width, 1)
     assert mux.height == height
     assert mux.width == width
-    assert mux.name() == f"MuxWrapperAOICommon_{height}_{width}_WithConst_1"
+    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_WithConst_1"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)

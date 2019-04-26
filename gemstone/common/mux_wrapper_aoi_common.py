@@ -33,7 +33,7 @@ def _generate_mux_wrapper(height, width, muxtype):
                     num_sel = math.ceil(math.log(height + 1, 2))
                 else:
                     f = open("mux_aoi.sv", "w")
-                    num_sel = math.ceil(math.log(height, 2)) 
+                    num_sel = math.ceil(math.log(height, 2))
                 num_inputs = math.pow(2, num_sel)
 
                 f.write("module mux ( \n")
@@ -71,7 +71,7 @@ def _generate_mux_wrapper(height, width, muxtype):
                     data = format(int(math.pow(2, int(i))),
                                   'b').zfill(int(num_inputs))
                     data0 = format(int(math.pow(2, int(height))),
-                                  'b').zfill(int(num_inputs))
+                                   'b').zfill(int(num_inputs))
                     f.write(f'\t\t{num_sel}\'d{i}    :   '
                             f'out_sel = {int(num_inputs)}\'b{data}; \n')
                 if (muxtype):
@@ -123,7 +123,7 @@ def _generate_mux_wrapper(height, width, muxtype):
 
 
 class AOIMuxWrapperCommon(Generator):
-    def __init__(self, height, width, muxtype,  name=None):
+    def __init__(self, height, width, muxtype, name=None):
         super().__init__(name)
 
         self.height = height
@@ -142,7 +142,6 @@ class AOIMuxWrapperCommon(Generator):
             self.sel_bits = 0
             return
 
-
         if (muxtype):
             # 1-bit extra for the constant
             self.sel_bits = magma.bitutils.clog2(self.height + 1)
@@ -158,4 +157,4 @@ class AOIMuxWrapperCommon(Generator):
         return _generate_mux_wrapper(self.height, self.width, self.muxtype)
 
     def name(self):
-        return f"MuxWrapperAOICommon_{self.height}_{self.width}_WithConst_{self.muxtype}"
+        return f"MuxWrapperAOI_{self.height}_{self.width}_WithConst_{self.muxtype}"
