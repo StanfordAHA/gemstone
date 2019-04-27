@@ -47,7 +47,7 @@ class GenesisWrapper:
             for param, (_, default) in self.__interface.params.items():
                 if param_mapping is not None and param in param_mapping:
                     parameters[param_mapping[param]] = \
-                            kwargs.get(param, default)
+                        kwargs.get(param, default)
                 else:
                     parameters[param] = kwargs.get(param, default)
 
