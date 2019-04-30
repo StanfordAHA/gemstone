@@ -1,5 +1,4 @@
 from typing import Dict, List
-from .collections import HashableDict
 import argparse
 import magma as m
 from .run_genesis import run_genesis
@@ -86,5 +85,10 @@ class GenesisWrapper:
         define_wrapper = self.generator(param_mapping)
         parser = self.parser()
         args = parser.parse_args(argv)
-        circuit = define_wrapper(**vars(args))
+        # convert list to tuple
+        var_args = vars(args)
+        for key in var_args:
+            if isinstance(var_args[key], list):
+                var_args[key] = tuple(var_args[key])
+        circuit = define_wrapper(**var_args)
         print(circuit)

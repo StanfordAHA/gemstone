@@ -4,6 +4,7 @@ import random
 import magma as m
 from gemstone.common.genesis_wrapper import GenesisWrapper
 from gemstone.common.generator_interface import GeneratorInterface
+from gemstone.common.collections import HashableDict
 
 
 TOP = "test_run_genesis"
@@ -21,7 +22,6 @@ def test_generator(mode):
     def _foo(*args, **kwargs):
         pass
     generator = WRAPPER.generator(mode=mode)
-    assert inspect.isfunction(generator)
     assert inspect.signature(generator) == inspect.signature(_foo)
     # Check that passing non-kwargs fails.
     try:

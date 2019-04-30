@@ -15,7 +15,7 @@ def run_genesis(top: str,
     param_strs = [f"-parameter {top}.{k}='{str(v)}'"
                   for k, v in parameters.items()]
     files = in_file_or_files
-    if isinstance(files, list):
+    if isinstance(files, (list, tuple)):
         files = " ".join(files)
 
     cmd = (f"{genesis_cmd} -parse -generate -top {top} "
