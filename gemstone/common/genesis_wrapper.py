@@ -1,4 +1,5 @@
 from typing import Dict, List
+from .collections import HashableDict
 import argparse
 import magma as m
 from .run_genesis import run_genesis
@@ -30,12 +31,17 @@ class GenesisWrapper:
         self.__system_verilog = system_verilog
         self.__type_map = type_map
 
+    @m.cache_definition
     def generator(self, param_mapping: Dict[str, str] = None,
                   mode: str = "define"):
         """
         `param_mapping`: (optional) a partial mapping between generator name and
             genesis name (used to rename parameters in the original genesis)
+            Notice that param_mapping has to be convert to HashableDict,
+            which is in gemstone.common.collections
         """
+
+        @m.cache_definition
         def define_wrapper(*args, **kwargs):
             if args:
                 raise NotImplementedError(

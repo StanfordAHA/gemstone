@@ -9,3 +9,9 @@ class DotDict(UserDict):
 
     def __getattr__(self, key):
         return self.data[key]
+
+
+class HashableDict(dict):
+    def __hash__(self):
+        return hash(frozenset(self))
+
