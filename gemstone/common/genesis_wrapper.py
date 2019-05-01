@@ -30,6 +30,7 @@ class GenesisWrapper:
         self.__top_name = top_name
         self.__default_infiles = default_infiles
         self.__type_map = type_map
+        self.__cache = {}
 
     def generator(self, param_mapping: Dict[str, str] = None,
                   mode: str = "define"):
@@ -52,6 +53,11 @@ class GenesisWrapper:
                 else:
                     parameters[param] = kwargs.get(param, default)
 
+            cache_key = tuple(parameters.values())
+            cache_key = (mode, *cache_key)
+            if cache_key in self.__cache:
+                return self.__cache[cache_key]
+
             # Allow user to override default input_files
             infiles = kwargs.get("infiles", self.__default_infiles)
 
@@ -72,7 +78,9 @@ class GenesisWrapper:
                 magma_defns = func(combined_filename, type_map=self.__type_map,
                                    target_modules=[self.__top_name])
                 assert len(magma_defns) == 1
-                return magma_defns[0]
+                defn = magma_defns[0]
+                self.__cache[cache_key] = defn
+                return defn
 
         return define_wrapper
 

@@ -45,6 +45,21 @@ def test_generator(mode):
         assert type(expected_ports[name]) == type(type_)
 
 
+def test_wrapper_cache_hit():
+    generator = WRAPPER.generator()
+    module = generator(**PARAMS)
+    module_copy = generator(**PARAMS)
+    assert module is module_copy
+
+
+def test_wrapper_cache_miss():
+    generator = WRAPPER.generator()
+    module = generator(width=1)
+    module_copy = generator(width=2)
+    assert module is not module_copy
+    assert repr(module) != repr(module_copy)
+
+
 def test_parser_basic():
     parser = WRAPPER.parser()
     w = random.randint(0, 100)
