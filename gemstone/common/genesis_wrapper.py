@@ -1,5 +1,7 @@
-from typing import Dict, List
 import argparse
+import shutil
+import tempfile
+from typing import Dict, List
 import magma as m
 from .run_genesis import run_genesis
 
@@ -27,7 +29,6 @@ class GenesisWrapper:
         self.__interface = interface
         self.__top_name = top_name
         self.__default_infiles = default_infiles
-        self.__system_verilog = system_verilog
         self.__type_map = type_map
 
     def generator(self, param_mapping: Dict[str, str] = None,
@@ -54,18 +55,24 @@ class GenesisWrapper:
             # Allow user to override default input_files
             infiles = kwargs.get("infiles", self.__default_infiles)
 
-            outfile = run_genesis(self.__top_name, infiles, parameters,
-                                  system_verilog=self.__system_verilog)
+            outfiles = run_genesis(self.__top_name, infiles, parameters)
             if mode == "define":
                 func = m.DefineFromVerilogFile
             elif mode == "declare":
                 func = m.DeclareFromVerilogFile
             else:
                 raise NotImplementedError(f"Unsupported mode '{mode}'")
-            func_kwargs = {"type_map": self.__type_map}
-            if func is m.DefineFromVerilogFile:
-                func_kwargs.update({"shallow": True})
-            return func(outfile, **func_kwargs)[0]
+
+            with tempfile.TemporaryDirectory() as tempdir:
+                combined_filename = tempdir + "/combined.v"
+                with open(combined_filename, "wb") as combined:
+                    for outfile in outfiles:
+                        with open(outfile, "rb") as fd:
+                            shutil.copyfileobj(fd, combined)
+                magma_defns = func(combined_filename, type_map=self.__type_map,
+                                   target_modules=[self.__top_name])
+                assert len(magma_defns) == 1
+                return magma_defns[0]
 
         return define_wrapper
 

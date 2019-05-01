@@ -9,7 +9,6 @@ PARAMS = {
 
 
 def get_lines(filename):
-    lines = []
     with open(filename) as f:
         return f.readlines()
 
@@ -20,7 +19,9 @@ def test_run_genesis_basic():
     that it raises an exception on failure.
     """
     GOLDEN = "tests/common/gold/test_run_genesis.v"
-    verilog_file = run_genesis(TOP, INFILES, PARAMS)
+    verilog_files = run_genesis(TOP, INFILES, PARAMS)
+    assert len(verilog_files) == 1
+    verilog_file = verilog_files[0]
     golden_lines = get_lines(GOLDEN)
     genesis_lines = get_lines(verilog_file)
     assert golden_lines[40:] == genesis_lines[40:]
@@ -32,7 +33,7 @@ def test_run_genesis_bad_params():
     bad_params = PARAMS.copy()
     bad_params.update({"some_non_existent_param": 0})
     try:
-        verilog_file = run_genesis(TOP, INFILES, bad_params)
+        run_genesis(TOP, INFILES, bad_params)
         assert False
     except RuntimeError as e:
         msg = e.__str__()

@@ -77,8 +77,9 @@ def test_main(capsys):
     w = random.randint(0, 100)
     WRAPPER.main(argv=["--width", str(w)])
     out, _ = capsys.readouterr()
-    expected_out = f"""\
-Running genesis cmd 'Genesis2.pl -parse -generate -top test_run_genesis -input {''.join(INFILES)} -parameter test_run_genesis.width='{w}''
-test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits[{w}]), in1: In(Bits[{w}]), sel: In(Bit), out: Out(Bits[{w}]))
-"""  # nopep8
+    out = out.rstrip().split("\n")[1:]
+    expected_out = [
+        f"test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits[{w}]), in1: In(Bits[{w}]), sel: In(Bit), out: Out(Bits[{w}]))",  # nopep8
+    ]
+    # nopep8
     assert out == expected_out
