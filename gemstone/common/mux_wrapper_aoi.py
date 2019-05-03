@@ -115,13 +115,14 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 f.write("endmodule \n")
                 f.close()
                 if mux_type == AOIMuxType.Const:
-                    mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
-                                                      target_modules=["mux"
-                                                                      ])[0]()
+                    Mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
+                                                      target_modules=["mux"],
+                                                      shallow=True)[0]
                 else:
-                    mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
-                                                      target_modules=["mux"
-                                                                      ])[0]()
+                    Mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
+                                                      target_modules=["mux"],
+                                                      shallow=True)[0]
+                mux = Mux()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
                 mux_in = io.S if sel_bits > 1 else io.S[0]
