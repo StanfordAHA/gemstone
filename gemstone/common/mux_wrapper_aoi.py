@@ -20,7 +20,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
     T = magma.Bits[width]
 
     class _MuxWrapper(magma.Circuit):
-        name = f"MuxWrapper_{height}_{width}"
+        name = f"MuxWrapperAOIImpl_{height}_{width}"
         in_height = max(1, height)
         IO = [
             "I", magma.In(magma.Array[in_height, T]),
@@ -43,7 +43,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     num_sel = math.ceil(math.log(height, 2))
                 num_inputs = math.pow(2, num_sel)
 
-                f.write("module mux ( \n")
+                f.write(f"module mux_aoi_{height}_{width} ( \n")
 
                 for i in range(height):
                     f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
@@ -114,13 +114,14 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
 
                 f.write("endmodule \n")
                 f.close()
+                targets = [f"mux_aoi_{height}_{width}"]
                 if mux_type == AOIMuxType.Const:
                     Mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
-                                                      target_modules=["mux"],
+                                                      target_modules=targets,
                                                       shallow=True)[0]
                 else:
                     Mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
-                                                      target_modules=["mux"],
+                                                      target_modules=targets,
                                                       shallow=True)[0]
                 mux = Mux()
                 for i in range(height):
