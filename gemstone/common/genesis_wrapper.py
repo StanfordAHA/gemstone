@@ -62,7 +62,7 @@ class GenesisWrapper:
                 func = m.DeclareFromVerilogFile
             else:
                 raise NotImplementedError(f"Unsupported mode '{mode}'")
-            return func(outfile, type_map=self.__type_map)[0]
+            return func(outfile, type_map=self.__type_map, shallow=True)[0]
 
         return define_wrapper
 
