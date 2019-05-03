@@ -64,7 +64,7 @@ class GenesisWrapper:
                 raise NotImplementedError(f"Unsupported mode '{mode}'")
             func_kwargs = {"type_map": self.__type_map}
             if func is m.DefineFromVerilogFile:
-              func_kwargs.update({"shallow": True})
+                func_kwargs.update({"shallow": True})
             return func(outfile, **func_kwargs)[0]
 
         return define_wrapper
