@@ -13,7 +13,7 @@ default_type_map = {"clk": m.In(m.Clock),
 
 class GenesisWrapper:
     def __init__(self, interface, top_name, default_infiles,
-                 system_verilog=False, type_map={}):
+                 system_verilog=False, type_map={}, external_modules={}):
         """
         `interface`: the generator params and default values
         `top_name`: the name of the top module
@@ -31,6 +31,7 @@ class GenesisWrapper:
         self.__default_infiles = default_infiles
         self.__type_map = type_map
         self.__cache = {}
+        self.__external_modules = external_modules
 
     def generator(self, param_mapping: Dict[str, str] = None,
                   mode: str = "define"):
@@ -76,7 +77,8 @@ class GenesisWrapper:
                         with open(outfile, "rb") as fd:
                             shutil.copyfileobj(fd, combined)
                 magma_defns = func(combined_filename, type_map=self.__type_map,
-                                   target_modules=[self.__top_name])
+                                   target_modules=[self.__top_name],
+                                   external_modules=self.__external_modules)
                 assert len(magma_defns) == 1
                 defn = magma_defns[0]
                 self.__cache[cache_key] = defn
