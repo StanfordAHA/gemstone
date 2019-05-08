@@ -1,5 +1,7 @@
-from typing import Dict, List
 import argparse
+import shutil
+import tempfile
+from typing import Dict, List
 import magma as m
 from .run_genesis import run_genesis
 
@@ -11,7 +13,7 @@ default_type_map = {"clk": m.In(m.Clock),
 
 class GenesisWrapper:
     def __init__(self, interface, top_name, default_infiles,
-                 system_verilog=False, type_map={}):
+                 system_verilog=False, type_map={}, external_modules={}):
         """
         `interface`: the generator params and default values
         `top_name`: the name of the top module
@@ -27,8 +29,9 @@ class GenesisWrapper:
         self.__interface = interface
         self.__top_name = top_name
         self.__default_infiles = default_infiles
-        self.__system_verilog = system_verilog
         self.__type_map = type_map
+        self.__cache = {}
+        self.__external_modules = external_modules
 
     def generator(self, param_mapping: Dict[str, str] = None,
                   mode: str = "define"):
@@ -51,21 +54,38 @@ class GenesisWrapper:
                 else:
                     parameters[param] = kwargs.get(param, default)
 
+            cache_key = tuple(parameters.values())
+            cache_key = (mode, *cache_key)
+            if cache_key in self.__cache:
+                return self.__cache[cache_key]
+
             # Allow user to override default input_files
             infiles = kwargs.get("infiles", self.__default_infiles)
 
-            outfile = run_genesis(self.__top_name, infiles, parameters,
-                                  system_verilog=self.__system_verilog)
+            outfiles = run_genesis(self.__top_name, infiles, parameters)
             if mode == "define":
                 func = m.DefineFromVerilogFile
             elif mode == "declare":
                 func = m.DeclareFromVerilogFile
             else:
                 raise NotImplementedError(f"Unsupported mode '{mode}'")
-            func_kwargs = {"type_map": self.__type_map}
+
+            func_kwargs = dict(type_map=self.__type_map,
+                               target_modules=[self.__top_name])
             if func is m.DefineFromVerilogFile:
-                func_kwargs.update({"shallow": True})
-            return func(outfile, **func_kwargs)[0]
+                func_kwargs.update(dict(external_modules=self.__external_modules))
+
+            with tempfile.TemporaryDirectory() as tempdir:
+                combined_filename = tempdir + "/combined.v"
+                with open(combined_filename, "wb") as combined:
+                    for outfile in outfiles:
+                        with open(outfile, "rb") as fd:
+                            shutil.copyfileobj(fd, combined)
+                magma_defns = func(combined_filename, **func_kwargs)
+                assert len(magma_defns) == 1
+                defn = magma_defns[0]
+                self.__cache[cache_key] = defn
+                return defn
 
         return define_wrapper
 

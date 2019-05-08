@@ -45,6 +45,21 @@ def test_generator(mode):
         assert type(expected_ports[name]) == type(type_)
 
 
+def test_wrapper_cache_hit():
+    generator = WRAPPER.generator()
+    module = generator(**PARAMS)
+    module_copy = generator(**PARAMS)
+    assert module is module_copy
+
+
+def test_wrapper_cache_miss():
+    generator = WRAPPER.generator()
+    module = generator(width=1)
+    module_copy = generator(width=2)
+    assert module is not module_copy
+    assert repr(module) != repr(module_copy)
+
+
 def test_parser_basic():
     parser = WRAPPER.parser()
     w = random.randint(0, 100)
@@ -77,8 +92,9 @@ def test_main(capsys):
     w = random.randint(0, 100)
     WRAPPER.main(argv=["--width", str(w)])
     out, _ = capsys.readouterr()
-    expected_out = f"""\
-Running genesis cmd 'Genesis2.pl -parse -generate -top test_run_genesis -input {''.join(INFILES)} -parameter test_run_genesis.width='{w}''
-test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits[{w}]), in1: In(Bits[{w}]), sel: In(Bit), out: Out(Bits[{w}]))
-"""  # nopep8
+    out = out.rstrip().split("\n")[1:]
+    expected_out = [
+        f"test_run_genesis(clk: In(Bit), reset: In(Bit), in0: In(Bits[{w}]), in1: In(Bits[{w}]), sel: In(Bit), out: Out(Bits[{w}]))",  # nopep8
+    ]
+    # nopep8
     assert out == expected_out
