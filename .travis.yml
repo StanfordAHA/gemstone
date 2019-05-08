@@ -27,6 +27,7 @@ install:
     - pip install python-coveralls
     - pip install pytest-cov pytest-codestyle
     - pip install -e .
+    - pip install -e git+git://github.com/phanrahan/magma.git#egg=magma-lang
 
     # BEGIN GENESIS2 INSTALL
     - git clone https://github.com/StanfordVLSI/Genesis2.git
