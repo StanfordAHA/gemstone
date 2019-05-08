@@ -70,15 +70,18 @@ class GenesisWrapper:
             else:
                 raise NotImplementedError(f"Unsupported mode '{mode}'")
 
+            func_kwargs = dict(type_map=self.__type_map,
+                               target_modules=[self.__top_name])
+            if func is m.DefineFromVerilogFile:
+                func_kwargs.update(dict(external_modules=self.__external_modules))
+
             with tempfile.TemporaryDirectory() as tempdir:
                 combined_filename = tempdir + "/combined.v"
                 with open(combined_filename, "wb") as combined:
                     for outfile in outfiles:
                         with open(outfile, "rb") as fd:
                             shutil.copyfileobj(fd, combined)
-                magma_defns = func(combined_filename, type_map=self.__type_map,
-                                   target_modules=[self.__top_name],
-                                   external_modules=self.__external_modules)
+                magma_defns = func(combined_filename, **func_kwargs)
                 assert len(magma_defns) == 1
                 defn = magma_defns[0]
                 self.__cache[cache_key] = defn
