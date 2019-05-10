@@ -105,13 +105,6 @@ def test_remove_simple():
     num_inputs = 10
 
     parent = Parent(width)
-    new_child = Child3(width)
-    try:
-        # try to replace one with different interface
-        replace(parent, parent.child, new_child)
-        assert False
-    except AssertionError:
-        pass
     new_child = Child2(width)
     replace(parent, parent.child, new_child)
 
