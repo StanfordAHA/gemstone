@@ -53,10 +53,10 @@ def test_aoi_const_mux_wrapper(height, width):
     undefined behavior.
     """
     mux = AOIMuxWrapper(height, width, AOIMuxType.Const)
-    assert mux.height == height
+    assert mux.height == height + 1
     assert mux.width == width
     assert mux.name() == \
-        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Const.name}"
+        f"MuxWrapperAOI_{height + 1}_{width}_{AOIMuxType.Const.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)

@@ -12,11 +12,7 @@ class AOIMuxType(enum.Enum):
 
 @magma.cache_definition
 def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
-    if mux_type == mux_type.Const:
-        # 1-bit extra for the constant
-        sel_bits = magma.bitutils.clog2(height + 1)
-    else:
-        sel_bits = magma.bitutils.clog2(height)
+    sel_bits = magma.bitutils.clog2(height)
     T = magma.Bits[width]
 
     class _MuxWrapper(magma.Circuit):
@@ -140,6 +136,8 @@ class AOIMuxWrapper(Generator):
         self.height = height
         self.width = width
         self.mux_type: AOIMuxType = mux_type
+        if mux_type == AOIMuxType.Const:
+            self.height += 1
 
         T = magma.Bits[self.width]
 
@@ -153,11 +151,7 @@ class AOIMuxWrapper(Generator):
             self.sel_bits = 0
             return
 
-        if mux_type == AOIMuxType.Const:
-            # 1-bit extra for the constant
-            self.sel_bits = magma.bitutils.clog2(self.height + 1)
-        else:
-            self.sel_bits = magma.bitutils.clog2(self.height)
+        self.sel_bits = magma.bitutils.clog2(self.height)
         self.add_ports(
             I=magma.In(magma.Array[self.height, T]),
             S=magma.In(magma.Bits[self.sel_bits]),
