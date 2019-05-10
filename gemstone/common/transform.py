@@ -69,6 +69,7 @@ def replace(parent: Generator, old_gen: Generator, new_gen: Generator):
     for port_name, old_port in old_gen.ports.items():
         assert port_name in new_gen.ports
         new_port = new_gen.ports[port_name]
+        assert old_port.base_type() == new_port.base_type()
 
     # looping through the wires in parent that need to be replaced
     wires = set()
