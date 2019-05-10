@@ -12,7 +12,7 @@ class FromMagma(Generator):
         self.underlying = circuit
 
         for name, port in self.underlying.IO.ports.items():
-            self.add_port(name, port.flip())
+            self.add_port(name, port)
 
     def circuit(self):
         return self.underlying
