@@ -45,23 +45,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     num_ops = math.ceil(height/2)
                 num_inputs = math.pow(2, num_sel)
 
-                #f.write(f"module AO22D0BWP16P90 ( \n")
-                #f.write(f'\tinput logic  A1, \n')
-                #f.write(f'\tinput logic  A2, \n')
-                #f.write(f'\tinput logic  B1, \n')
-                #f.write(f'\tinput logic  B2, \n')
-                #f.write(f'\toutput logic  Z); \n') 
-                #f.write(f'\tassign Z = ((A1 & A2) | (B1 & B2)); \n')
-                #f.write(f"endmodule  \n")
-
-                #f.write(f"module AN2D0BWP16P90 ( \n")
-                #f.write(f'\tinput logic  A1, \n')
-                #f.write(f'\tinput logic  A2, \n')
-                #f.write(f'\toutput logic  Z); \n')
-                #f.write(f'\tassign Z = (A1 & A2); \n')
-                #f.write(f"endmodule  \n")
-
-                ############# MUX MODULE #######################
+                # ======= MUX MODULE =========
                 if mux_type == mux_type.Const:
                     f.write(f"module mux_aoi_const_{height}_{width} ( \n")
                 else:
@@ -74,7 +58,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
                 f.write(f'\toutput logic [{width-1} : 0] O); \n')
 
-                # Intermediate Signals 
+                # Intermediate Signals
                 f.write(f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
                 for i in range(num_ops): 
                     f.write(f'\tlogic  [{int(width)-1} : 0] O_int{i};\n')
@@ -94,15 +78,15 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 f.write(f'\t.O{num_ops-1}(O_int{num_ops-1})); \n')
 
                 # OR Logic
-                f.write(f'\tassign O = (  ') 
-                for i in range(num_ops-1): 
-                   f.write(f'\tO_int{i} | ')
-                f.write(f'\tO_int{num_ops-1} ')  
+                f.write(f'\tassign O = (  ')
+                for i in range(num_ops - 1):
+                    f.write(f'\tO_int{i} | ')
+                f.write(f'\tO_int{num_ops-1} ')
                 f.write(f'\t); \n')    
 
                 f.write(f'\nendmodule \n')
 
-                ############# PRECODER MODULE ####################### 
+                # ======== PRECODER MODULE ========
                 f.write(f'\nmodule precoder_{width}_{height} ( \n')
                 f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
                 f.write(f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );'
@@ -126,24 +110,24 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 f.write(f'end \n')
                 f.write(f'\nendmodule \n')
 
-                ############# MUX_LOGIC MODULE ####################### 
+                # ======== MUX_LOGIC MODULE ========
                 f.write(f'\nmodule mux_logic_{width}_{height} ( \n')
                 f.write(f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n')
                 for i in range(height):
                     f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
-                for i in range(num_ops-1):
-                    f.write(f'\toutput logic  [{width-1} : 0] O{i}, \n')  
+                for i in range(num_ops - 1):
+                    f.write(f'\toutput logic  [{width-1} : 0] O{i}, \n')
                 f.write(f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n') 
 
                 for j in range(width):
-                    for i in range(math.floor(height/2)):
+                    for i in range(math.floor(height / 2)):
                         f.write(f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n')
                         f.write(f'\t.A1(out_sel[{i*2}]), \n')
                         f.write(f'\t.A2(I{i*2}[{j}]), \n')
                         f.write(f'\t.B1(out_sel[{i*2+1}]), \n')
                         f.write(f'\t.B2(I{i*2+1}[{j}]), \n')
                         f.write(f'\t.Z(O{i}[{j}])); \n')
-                    if (height%2 !=0):
+                    if (height % 2 != 0):
                         if (mux_type != mux_type.Const):
                             f.write(f'\tAN2D0BWP16P90 inst_and_{j} ( \n')
                             f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
