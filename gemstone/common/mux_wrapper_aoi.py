@@ -38,11 +38,11 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     f = open("mux_aoi_const.sv", "w")
                     # 1-bit extra for the constant
                     num_sel = math.ceil(math.log(height + 1, 2))
-                    num_ops = math.ceil((height+1)/2)
+                    num_ops = math.ceil((height + 1) / 2)
                 else:
                     f = open("mux_aoi.sv", "w")
                     num_sel = math.ceil(math.log(height, 2))
-                    num_ops = math.ceil(height/2)
+                    num_ops = math.ceil(height / 2)
                 num_inputs = math.pow(2, num_sel)
 
                 # ======= MUX MODULE =========
@@ -60,10 +60,10 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
 
                 # Intermediate Signals
                 f.write(f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
-                for i in range(num_ops): 
+                for i in range(num_ops):
                     f.write(f'\tlogic  [{int(width)-1} : 0] O_int{i};\n')
-                
-                # PRECODER INSTANTIATION # 
+
+                # PRECODER INSTANTIATION #
                 f.write(f'\nprecoder_{width}_{height} u_precoder ( \n')
                 f.write('\t.S(S), \n')
                 f.write('\t.out_sel(out_sel)); \n')
@@ -73,7 +73,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 for i in range(height):
                     f.write(f'\t.I{i} (I{i}),\n')
                 f.write(f'\t.out_sel(out_sel), \n')
-                for i in range(num_ops-1):
+                for i in range(num_ops - 1):
                     f.write(f'\t.O{i}(O_int{i}), \n')
                 f.write(f'\t.O{num_ops-1}(O_int{num_ops-1})); \n')
 
@@ -82,7 +82,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 for i in range(num_ops - 1):
                     f.write(f'\tO_int{i} | ')
                 f.write(f'\tO_int{num_ops-1} ')
-                f.write(f'\t); \n')    
+                f.write(f'\t); \n')
 
                 f.write(f'\nendmodule \n')
 
@@ -117,7 +117,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
                 for i in range(num_ops - 1):
                     f.write(f'\toutput logic  [{width-1} : 0] O{i}, \n')
-                f.write(f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n') 
+                f.write(f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n')
 
                 for j in range(width):
                     for i in range(math.floor(height / 2)):
@@ -146,7 +146,6 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                             f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
                             f.write(f'\t.A2(1\'b0), \n')
                             f.write(f'\t.Z(O{i+1}[{j}])); \n')
-                
                 f.write("endmodule \n")
                 f.close()
                 targets = [f"mux_aoi_{height}_{width}"]
