@@ -86,10 +86,10 @@ def test_aoi_const_mux_wrapper(height, width):
                                flags=["-Wno-fatal"])
 
 
-#@pytest.mark.parametrize('height,width', [(choice([2, 4, 5, 6, 8, 9]),
+# @pytest.mark.parametrize('height,width', [(choice([2, 4, 5, 6, 8, 9]),
 #                                           randint(1, 32))
 #                                          for _ in range(5)])
-#def test_aoi_const_X_prop_mux_wrapper(height, width):
+# def test_aoi_const_X_prop_mux_wrapper(height, width):
 #    """
 #    Test that the mux wrapper circuit works as expected. Specifically, we
 #    initialize a mux with random height and width, and check that the output is
