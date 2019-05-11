@@ -38,13 +38,34 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     f = open("mux_aoi_const.sv", "w")
                     # 1-bit extra for the constant
                     num_sel = math.ceil(math.log(height + 1, 2))
+                    num_ops = math.ceil((height+1)/2)
                 else:
                     f = open("mux_aoi.sv", "w")
                     num_sel = math.ceil(math.log(height, 2))
+                    num_ops = math.ceil(height/2)
                 num_inputs = math.pow(2, num_sel)
 
-                f.write(f"module mux_aoi_{height}_{width} ( \n")
+                #f.write(f"module AO22D0BWP16P90 ( \n")
+                #f.write(f'\tinput logic  A1, \n')
+                #f.write(f'\tinput logic  A2, \n')
+                #f.write(f'\tinput logic  B1, \n')
+                #f.write(f'\tinput logic  B2, \n')
+                #f.write(f'\toutput logic  Z); \n') 
+                #f.write(f'\tassign Z = ((A1 & A2) | (B1 & B2)); \n')
+                #f.write(f"endmodule  \n")
 
+                #f.write(f"module AN2D0BWP16P90 ( \n")
+                #f.write(f'\tinput logic  A1, \n')
+                #f.write(f'\tinput logic  A2, \n')
+                #f.write(f'\toutput logic  Z); \n')
+                #f.write(f'\tassign Z = (A1 & A2); \n')
+                #f.write(f"endmodule  \n")
+
+                ############# MUX MODULE #######################
+                if mux_type == mux_type.Const:
+                    f.write(f"module mux_aoi_const_{height}_{width} ( \n")
+                else:
+                    f.write(f"module mux_aoi_{height}_{width} ( \n")
                 for i in range(height):
                     f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
                 if num_sel == 1:
@@ -53,20 +74,35 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
                 f.write(f'\toutput logic [{width-1} : 0] O); \n')
 
-                f.write(f'\t\nlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
-
+                # Intermediate Signals 
+                f.write(f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
+                for i in range(num_ops): 
+                    f.write(f'\tlogic  [{int(width)-1} : 0] O_int{i};\n')
+                
+                # PRECODER INSTANTIATION # 
                 f.write(f'\nprecoder_{width}_{height} u_precoder ( \n')
                 f.write('\t.S(S), \n')
                 f.write('\t.out_sel(out_sel)); \n')
 
+                # MUX_LOGIC INSTANTIATION #
                 f.write(f'\nmux_logic_{width}_{height} u_mux_logic ( \n')
                 for i in range(height):
                     f.write(f'\t.I{i} (I{i}),\n')
                 f.write(f'\t.out_sel(out_sel), \n')
-                f.write(f'\t.O(O)); \n')
+                for i in range(num_ops-1):
+                    f.write(f'\t.O{i}(O_int{i}), \n')
+                f.write(f'\t.O{num_ops-1}(O_int{num_ops-1})); \n')
+
+                # OR Logic
+                f.write(f'\tassign O = (  ') 
+                for i in range(num_ops-1): 
+                   f.write(f'\tO_int{i} | ')
+                f.write(f'\tO_int{num_ops-1} ')  
+                f.write(f'\t); \n')    
 
                 f.write(f'\nendmodule \n')
 
+                ############# PRECODER MODULE ####################### 
                 f.write(f'\nmodule precoder_{width}_{height} ( \n')
                 f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
                 f.write(f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );'
@@ -90,36 +126,53 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 f.write(f'end \n')
                 f.write(f'\nendmodule \n')
 
+                ############# MUX_LOGIC MODULE ####################### 
                 f.write(f'\nmodule mux_logic_{width}_{height} ( \n')
                 f.write(f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n')
                 for i in range(height):
                     f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
-                f.write(f'\toutput logic [{width-1} : 0] O); \n')
+                for i in range(num_ops-1):
+                    f.write(f'\toutput logic  [{width-1} : 0] O{i}, \n')  
+                f.write(f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n') 
 
-                f.write(f'\nalways_comb begin: out_sel_logic \n')
-                f.write(f'\tcase (out_sel) \n')
-                for i in range(height):
-                    data = format(int(math.pow(2, int(i))),
-                                  'b').zfill(int(num_inputs))
-
-                    f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = I{i};'
-                            f'\n')
-                if mux_type == AOIMuxType.Const:
-                    data = format(int(math.pow(2, int(height))),
-                                  'b').zfill(int(num_inputs))
-                    f.write(f'\t\t{int(num_inputs)}\'b{data}    :   O = 0; \n')
-                f.write(f'\t\tdefault :   O = 0; \n''')
-                f.write(f'\tendcase \n')
-                f.write(f'end \n')
-
+                for j in range(width):
+                    for i in range(math.floor(height/2)):
+                        f.write(f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n')
+                        f.write(f'\t.A1(out_sel[{i*2}]), \n')
+                        f.write(f'\t.A2(I{i*2}[{j}]), \n')
+                        f.write(f'\t.B1(out_sel[{i*2+1}]), \n')
+                        f.write(f'\t.B2(I{i*2+1}[{j}]), \n')
+                        f.write(f'\t.Z(O{i}[{j}])); \n')
+                    if (height%2 !=0):
+                        if (mux_type != mux_type.Const):
+                            f.write(f'\tAN2D0BWP16P90 inst_and_{j} ( \n')
+                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
+                            f.write(f'\t.A2(I{i*2+2}[{j}]), \n')
+                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
+                        else:
+                            f.write(f'\tAO22D0BWP16P90 inst_{i+1}_{j} ( \n')
+                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
+                            f.write(f'\t.A2(I{i*2+2}[{j}]), \n')
+                            f.write(f'\t.B1(out_sel[{i*2+3}]), \n')
+                            f.write(f'\t.B2(1\'b0), \n')
+                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
+                    else:
+                        if (mux_type == mux_type.Const):
+                            f.write(f'\tAN2D0BWP16P90 inst_and_{j} ( \n')
+                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
+                            f.write(f'\t.A2(1\'b0), \n')
+                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
+                
                 f.write("endmodule \n")
                 f.close()
                 targets = [f"mux_aoi_{height}_{width}"]
                 if mux_type == AOIMuxType.Const:
+                    targets = [f"mux_aoi_const_{height}_{width}"]
                     Mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
                                                       target_modules=targets,
                                                       shallow=True)[0]
                 else:
+                    targets = [f"mux_aoi_{height}_{width}"]
                     Mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
                                                       target_modules=targets,
                                                       shallow=True)[0]
