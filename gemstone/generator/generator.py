@@ -54,7 +54,8 @@ class Generator(ABC):
         assert port_name in self.ports
         port_ref = self.ports[port_name]
         # due to the property of xor, the hash will go back to the original one
-        self.__hash ^= hash(name) ^ hash(Generator.__get_bit_width(port_ref._T))
+        self.__hash ^= hash(port_name) ^ \
+            hash(Generator.__get_bit_width(port_ref._T))
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
         # the only thing won't change is the port name
@@ -90,7 +91,6 @@ class Generator(ABC):
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
                               f"{port1.qualified_name()}")
-
 
     def remove_wire(self, port0, port1):
         assert isinstance(port0, PortReferenceBase)
