@@ -55,7 +55,7 @@ class Generator(ABC):
         port_ref = self.ports[port_name]
         # due to the property of xor, the hash will go back to the original one
         self.__hash ^= hash(port_name) ^ \
-                       hash(Generator.__get_bit_width(port_ref._T))
+            hash(Generator.__get_bit_width(port_ref._T))
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
         # the only thing won't change is the port name
