@@ -58,7 +58,8 @@ class Generator(ABC):
 
     def wire(self, port0, port1):
         if not get_debug_mode():
-            self.wires.append((port0, port1))
+            connection = self.__sort_ports(port0, port1)
+            self.wires.append(connection)
         else:
             assert isinstance(port0, PortReferenceBase)
             assert isinstance(port1, PortReferenceBase)
