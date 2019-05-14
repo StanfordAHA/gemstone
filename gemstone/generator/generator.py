@@ -36,26 +36,19 @@ class Generator(ABC):
     def name(self):
         pass
 
-    @staticmethod
-    def __get_bit_width(t):
-        if isinstance(t, magma.BitKind):
-            return 1
-        if isinstance(t, magma.BitsKind):
-            return len(t)
-
     def add_port(self, name, T):
         if get_debug_mode() and name in self.ports:
             raise ValueError(f"{name} is already a port")
-        self.__hash ^= hash(name) ^ hash(Generator.__get_bit_width(T))
-        self.ports[name] = PortReference(self, name, T)
+        port_ref = PortReference(self, name, T)
+        self.ports[name] = port_ref
+        self.__hash ^= hash(port_ref)
 
     def remove_port(self, port_name: str):
         # first remove it from self.ports
         assert port_name in self.ports
         port_ref = self.ports[port_name]
         # due to the property of xor, the hash will go back to the original one
-        self.__hash ^= hash(port_name) ^ \
-            hash(Generator.__get_bit_width(port_ref._T))
+        self.__hash ^= hash(port_ref)
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
         # the only thing won't change is the port name
@@ -73,8 +66,7 @@ class Generator(ABC):
             self.add_port(name, T)
 
     def __hash_wire(self, connection):
-        self.__hash ^= \
-            (~(hash(connection[0]._name) ^ hash(connection[1]._name))) << 16
+        self.__hash ^= (~(hash(connection[0]) ^ hash(connection[1]))) << 16
 
     def set_hash(self, new_hash_value):
         self.__hash = new_hash_value

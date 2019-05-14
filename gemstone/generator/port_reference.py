@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import magma
 
 
 class Op(ABC):
@@ -101,3 +102,15 @@ class PortReference(PortReferenceBase):
         for op in self._ops:
             name = op.transform_name(name)
         return name
+
+    @staticmethod
+    def __get_bit_width(t):
+        if isinstance(t, magma.BitKind):
+            return 1
+        if isinstance(t, magma.BitsKind):
+            return len(t)
+
+    def __hash__(self):
+        return hash(self._name) ^ \
+            hash(PortReference.__get_bit_width(self._T)) ^ \
+            hash(self._owner.__class__.__name__)
