@@ -20,6 +20,8 @@ def get_debug_mode():
 
 
 class Generator(ABC):
+    __cache = {}
+
     def __init__(self, name=None):
         """
         name: Set this parameter to override default name for instance
@@ -27,19 +29,32 @@ class Generator(ABC):
         self.ports = DotDict()
         self.wires = []
         self.instance_name = name
+        # use class name as a hash init
+        self.__hash = hash(self.__class__.__name__)
 
     @abstractmethod
     def name(self):
         pass
 
+    @staticmethod
+    def __get_bit_width(t):
+        if isinstance(t, magma.BitKind):
+            return 1
+        if isinstance(t, magma.BitsKind):
+            return len(t)
+
     def add_port(self, name, T):
         if get_debug_mode() and name in self.ports:
             raise ValueError(f"{name} is already a port")
+        self.__hash ^= hash(name) ^ hash(Generator.__get_bit_width(T))
         self.ports[name] = PortReference(self, name, T)
 
     def remove_port(self, port_name: str):
         # first remove it from self.ports
         assert port_name in self.ports
+        port_ref = self.ports[port_name]
+        # due to the property of xor, the hash will go back to the original one
+        self.__hash ^= hash(name) ^ hash(Generator.__get_bit_width(port_ref._T))
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
         # the only thing won't change is the port name
@@ -56,20 +71,26 @@ class Generator(ABC):
         for name, T in kwargs.items():
             self.add_port(name, T)
 
+    def __hash_wire(self, connection):
+        self.__hash ^= ~(hash(connection[0]._name) ^ hash(connection[1]._name))
+
     def wire(self, port0, port1):
         if not get_debug_mode():
             connection = self.__sort_ports(port0, port1)
             self.wires.append(connection)
+            self.__hash_wire(connection)
         else:
             assert isinstance(port0, PortReferenceBase)
             assert isinstance(port1, PortReferenceBase)
             connection = self.__sort_ports(port0, port1)
             if connection not in self.wires:
                 self.wires.append(connection)
+                self.__hash_wire(connection)
             else:
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
                               f"{port1.qualified_name()}")
+
 
     def remove_wire(self, port0, port1):
         assert isinstance(port0, PortReferenceBase)
@@ -77,6 +98,7 @@ class Generator(ABC):
         connection = self.__sort_ports(port0, port1)
         if connection in self.wires:
             self.wires.remove(connection)
+            self.__hash_wire(connection)
 
     def decl(self):
         io = []
@@ -94,6 +116,9 @@ class Generator(ABC):
         return children
 
     def circuit(self):
+        if self.__hash in Generator.__cache:
+            return Generator.__cache[self.__hash]
+
         children = self.children()
         circuits = {}
         for child in children:
@@ -118,6 +143,8 @@ class Generator(ABC):
                     wire0 = port0.get_port(inst0)
                     wire1 = port1.get_port(inst1)
                     magma.wire(wire0, wire1)
+
+        Generator.__cache[self.__hash] = _Circ
 
         return _Circ
 
