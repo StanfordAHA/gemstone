@@ -6,6 +6,19 @@ from ..common.collections import DotDict
 from .port_reference import *
 
 
+__DEBUG_MODE = True
+
+
+def set_debug_mode(value: bool = True):
+    global __DEBUG_MODE
+    assert value in {True, False}
+    __DEBUG_MODE = value
+
+
+def get_debug_mode():
+    return __DEBUG_MODE
+
+
 class Generator(ABC):
     def __init__(self, name=None):
         """
@@ -20,7 +33,7 @@ class Generator(ABC):
         pass
 
     def add_port(self, name, T):
-        if name in self.ports:
+        if get_debug_mode() and name in self.ports:
             raise ValueError(f"{name} is already a port")
         self.ports[name] = PortReference(self, name, T)
 
@@ -44,15 +57,18 @@ class Generator(ABC):
             self.add_port(name, T)
 
     def wire(self, port0, port1):
-        assert isinstance(port0, PortReferenceBase)
-        assert isinstance(port1, PortReferenceBase)
-        connection = self.__sort_ports(port0, port1)
-        if connection not in self.wires:
-            self.wires.append(connection)
+        if not get_debug_mode():
+            self.wires.append((port0, port1))
         else:
-            warnings.warn(f"skipping duplicate connection: "
-                          f"{port0.qualified_name()}, "
-                          f"{port1.qualified_name()}")
+            assert isinstance(port0, PortReferenceBase)
+            assert isinstance(port1, PortReferenceBase)
+            connection = self.__sort_ports(port0, port1)
+            if connection not in self.wires:
+                self.wires.append(connection)
+            else:
+                warnings.warn(f"skipping duplicate connection: "
+                              f"{port0.qualified_name()}, "
+                              f"{port1.qualified_name()}")
 
     def remove_wire(self, port0, port1):
         assert isinstance(port0, PortReferenceBase)
