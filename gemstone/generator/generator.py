@@ -19,6 +19,10 @@ def get_debug_mode():
     return __DEBUG_MODE
 
 
+def _hash_wire(old_hash, connection):
+    return old_hash ^ (~(hash(connection[0]) ^ hash(connection[1]))) << 16
+
+
 class Generator(ABC):
     __cache = {}
 
@@ -37,7 +41,7 @@ class Generator(ABC):
         pass
 
     def add_port(self, name, T):
-        if get_debug_mode() and name in self.ports:
+        if name in self.ports:
             raise ValueError(f"{name} is already a port")
         port_ref = PortReference(self, name, T)
         self.ports[name] = port_ref
@@ -65,9 +69,6 @@ class Generator(ABC):
         for name, T in kwargs.items():
             self.add_port(name, T)
 
-    def __hash_wire(self, connection):
-        self.__hash ^= (~(hash(connection[0]) ^ hash(connection[1]))) << 16
-
     def set_hash(self, new_hash_value):
         self.__hash = new_hash_value
 
@@ -75,17 +76,17 @@ class Generator(ABC):
         return self.__hash
 
     def wire(self, port0, port1):
+        assert isinstance(port0, PortReferenceBase)
+        assert isinstance(port1, PortReferenceBase)
         if not get_debug_mode():
             connection = self.__sort_ports(port0, port1)
             self.wires.append(connection)
-            self.__hash_wire(connection)
+            self.__hash = _hash_wire(self.__hash, connection)
         else:
-            assert isinstance(port0, PortReferenceBase)
-            assert isinstance(port1, PortReferenceBase)
             connection = self.__sort_ports(port0, port1)
             if connection not in self.wires:
                 self.wires.append(connection)
-                self.__hash_wire(connection)
+                self.__hash = _hash_wire(self.__hash, connection)
             else:
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
@@ -97,7 +98,7 @@ class Generator(ABC):
         connection = self.__sort_ports(port0, port1)
         if connection in self.wires:
             self.wires.remove(connection)
-            self.__hash_wire(connection)
+            self.__hash = _hash_wire(self.__hash, connection)
 
     def decl(self):
         io = []

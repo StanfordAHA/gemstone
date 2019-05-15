@@ -113,4 +113,4 @@ class PortReference(PortReferenceBase):
     def __hash__(self):
         return hash(self._name) ^ \
             hash(PortReference.__get_bit_width(self._T)) ^ \
-            hash(self._owner.__class__.__name__)
+            hash(self._owner.name())
