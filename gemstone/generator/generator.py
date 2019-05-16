@@ -7,6 +7,11 @@ from .port_reference import *
 
 
 __DEBUG_MODE = True
+_generator_cache = {}
+
+
+def clear_generator_cache():
+    _generator_cache.clear()
 
 
 def set_debug_mode(value: bool = True):
@@ -24,8 +29,6 @@ def _hash_wire(old_hash, connection):
 
 
 class Generator(ABC):
-    __cache = {}
-
     def __init__(self, name=None):
         """
         name: Set this parameter to override default name for instance
@@ -116,8 +119,8 @@ class Generator(ABC):
         return children
 
     def circuit(self):
-        if self.__hash in Generator.__cache:
-            return Generator.__cache[self.__hash]
+        if self.__hash in _generator_cache:
+            return _generator_cache[self.__hash]
 
         children = self.children()
         circuits = {}
@@ -144,7 +147,7 @@ class Generator(ABC):
                     wire1 = port1.get_port(inst1)
                     magma.wire(wire0, wire1)
 
-        Generator.__cache[self.__hash] = _Circ
+        _generator_cache[self.__hash] = _Circ
 
         return _Circ
 
