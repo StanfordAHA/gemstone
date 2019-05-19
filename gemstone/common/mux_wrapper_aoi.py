@@ -84,7 +84,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 # ======== PRECODER MODULE ========
                 verilog += f'\nmodule precoder_{width}_{height} (\n'
                 verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
-                verilog += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n' # noqa
+                verilog += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n'    # noqa
 
                 verilog += f'\nalways_comb begin: mux_sel\n'
                 verilog += f'\tcase (S) \n'
@@ -95,7 +95,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                                    'b').zfill(int(num_inputs))
                     verilog += f'\t\t{num_sel}\'d{i}    :   out_sel = {int(num_inputs)}\'b{data};\n'   # noqa
                 if mux_type == AOIMuxType.Const:
-                    verilog += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n' # noqa
+                    verilog += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n'    # noqa
                 verilog += f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;\n'
                 verilog += f'\tendcase \n'
                 verilog += f'end \n'
@@ -182,7 +182,7 @@ class AOIMuxWrapper(Generator):
 
         if mux_type == AOIMuxType.Const:
             assert magma.bitutils.clog2(height) == \
-                   magma.bitutils.clog2(height + 1)
+                magma.bitutils.clog2(height + 1)
         self.sel_bits = magma.bitutils.clog2(height)
         self.add_ports(
             I=magma.In(magma.Array[self.height, T]),
