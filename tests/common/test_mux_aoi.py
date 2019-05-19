@@ -47,7 +47,7 @@ def test_aoi_mux_wrapper(height, width):
 
 
 # Keyi: the height cannot be 2^n
-@pytest.mark.parametrize('height,width', [(choice([2, 3, 5, 6, 7, 9]),
+@pytest.mark.parametrize('height,width', [(choice([3, 5, 6, 7, 9]),
                                            randint(1, 32))
                                           for _ in range(5)])
 def test_aoi_const_mux_wrapper(height, width):
