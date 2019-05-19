@@ -46,8 +46,8 @@ def test_aoi_mux_wrapper(height, width):
                                flags=["-Wno-fatal"])
 
 
-# Keyi: the height cannot be 2^n - 1
-@pytest.mark.parametrize('height,width', [(choice([2, 4, 5, 6, 8, 9]),
+# Keyi: the height cannot be 2^n
+@pytest.mark.parametrize('height,width', [(choice([2, 3, 5, 6, 7, 9]),
                                            randint(1, 32))
                                           for _ in range(5)])
 def test_aoi_const_mux_wrapper(height, width):
@@ -60,10 +60,9 @@ def test_aoi_const_mux_wrapper(height, width):
     undefined behavior.
     """
     mux = AOIMuxWrapper(height, width, AOIMuxType.Const)
-    assert mux.height == height + 1
     assert mux.width == width
     assert mux.name() == \
-        f"MuxWrapperAOI_{height + 1}_{width}_{AOIMuxType.Const.name}"
+        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Const.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)

@@ -31,130 +31,125 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 magma.wire(io.I[0], io.O)
             else:
                 if mux_type == mux_type.Const:
-                    f = open("mux_aoi_const.sv", "w")
                     # 1-bit extra for the constant
                     num_sel = math.ceil(math.log(height + 1, 2))
                     num_ops = math.ceil((height + 1) / 2)
                 else:
-                    f = open("mux_aoi.sv", "w")
                     num_sel = math.ceil(math.log(height, 2))
                     num_ops = math.ceil(height / 2)
                 num_inputs = math.pow(2, num_sel)
 
                 # ======= MUX MODULE =========
+                verilog = ""
                 if mux_type == mux_type.Const:
-                    f.write(f"module mux_aoi_const_{height}_{width} ( \n")
+                    verilog += f"module mux_aoi_const_{height}_{width} ( \n"
                 else:
-                    f.write(f"module mux_aoi_{height}_{width} ( \n")
+                    verilog += f"module mux_aoi_{height}_{width} ( \n"
                 for i in range(height):
-                    f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+                    verilog += f'\tinput logic  [{width-1} : 0] I{i}, \n'
                 if num_sel == 1:
-                    f.write(f'input logic S, \n')
+                    verilog += f'input logic S, \n'
                 else:
-                    f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
-                f.write(f'\toutput logic [{width-1} : 0] O); \n')
+                    verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
+                verilog += f'\toutput logic [{width-1} : 0] O); \n'
 
                 # Intermediate Signals
-                f.write(f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n')
+                verilog += f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n'
                 for i in range(num_ops):
-                    f.write(f'\tlogic  [{int(width)-1} : 0] O_int{i};\n')
+                    verilog += f'\tlogic  [{int(width)-1} : 0] O_int{i};\n'
 
                 # PRECODER INSTANTIATION #
-                f.write(f'\nprecoder_{width}_{height} u_precoder ( \n')
-                f.write('\t.S(S), \n')
-                f.write('\t.out_sel(out_sel)); \n')
+                verilog += f'\nprecoder_{width}_{height} u_precoder ( \n'
+                verilog += '\t.S(S), \n'
+                verilog += '\t.out_sel(out_sel)); \n'
 
                 # MUX_LOGIC INSTANTIATION #
-                f.write(f'\nmux_logic_{width}_{height} u_mux_logic ( \n')
+                verilog += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
                 for i in range(height):
-                    f.write(f'\t.I{i} (I{i}),\n')
-                f.write(f'\t.out_sel(out_sel), \n')
+                    verilog += f'\t.I{i} (I{i}),\n'
+                verilog += f'\t.out_sel(out_sel), \n'
                 for i in range(num_ops - 1):
-                    f.write(f'\t.O{i}(O_int{i}), \n')
-                f.write(f'\t.O{num_ops-1}(O_int{num_ops-1})); \n')
+                    verilog += f'\t.O{i}(O_int{i}), \n'
+                verilog += f'\t.O{num_ops-1}(O_int{num_ops-1})); \n'
 
                 # OR Logic
-                f.write(f'\tassign O = (  ')
+                verilog += f'\tassign O = (  '
                 for i in range(num_ops - 1):
-                    f.write(f'\tO_int{i} | ')
-                f.write(f'\tO_int{num_ops-1} ')
-                f.write(f'\t); \n')
+                    verilog += f'\tO_int{i} | '
+                verilog += f'\tO_int{num_ops-1} '
+                verilog += f'\t); \n'
 
-                f.write(f'\nendmodule \n')
+                verilog += f'\nendmodule \n'
 
                 # ======== PRECODER MODULE ========
-                f.write(f'\nmodule precoder_{width}_{height} ( \n')
-                f.write(f'\tinput logic  [{num_sel-1} : 0] S ,\n')
-                f.write(f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );'
-                        f'\n')
+                verilog += f'\nmodule precoder_{width}_{height} (\n'
+                verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
+                verilog += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n' # noqa
 
-                f.write(f'\nalways_comb begin: mux_sel \n')
-                f.write(f'\tcase (S) \n')
+                verilog += f'\nalways_comb begin: mux_sel\n'
+                verilog += f'\tcase (S) \n'
                 for i in range(height):
                     data = format(int(math.pow(2, int(i))),
                                   'b').zfill(int(num_inputs))
                     data0 = format(int(math.pow(2, int(height))),
                                    'b').zfill(int(num_inputs))
-                    f.write(f'\t\t{num_sel}\'d{i}    :   '
-                            f'out_sel = {int(num_inputs)}\'b{data}; \n')
+                    verilog += f'\t\t{num_sel}\'d{i}    :   out_sel = {int(num_inputs)}\'b{data};\n'   # noqa
                 if mux_type == AOIMuxType.Const:
-                    f.write(f'\t\t{num_sel}\'d{height}    :'
-                            f'   out_sel = {int(num_inputs)}\'b{data0}; \n')
-                f.write(f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0; '
-                        f'\n''')
-                f.write(f'\tendcase \n')
-                f.write(f'end \n')
-                f.write(f'\nendmodule \n')
+                    verilog += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n' # noqa
+                verilog += f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;\n'
+                verilog += f'\tendcase \n'
+                verilog += f'end \n'
+                verilog += f'\nendmodule \n'
 
                 # ======== MUX_LOGIC MODULE ========
-                f.write(f'\nmodule mux_logic_{width}_{height} ( \n')
-                f.write(f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n')
+                verilog += f'\nmodule mux_logic_{width}_{height} ( \n'
+                verilog += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
                 for i in range(height):
-                    f.write(f'\tinput logic  [{width-1} : 0] I{i}, \n')
+                    verilog += f'\tinput logic  [{width-1} : 0] I{i}, \n'
                 for i in range(num_ops - 1):
-                    f.write(f'\toutput logic  [{width-1} : 0] O{i}, \n')
-                f.write(f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n')
+                    verilog += f'\toutput logic  [{width-1} : 0] O{i}, \n'
+                verilog += f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n'
 
                 for j in range(width):
                     for i in range(math.floor(height / 2)):
-                        f.write(f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n')
-                        f.write(f'\t.A1(out_sel[{i*2}]), \n')
-                        f.write(f'\t.A2(I{i*2}[{j}]), \n')
-                        f.write(f'\t.B1(out_sel[{i*2+1}]), \n')
-                        f.write(f'\t.B2(I{i*2+1}[{j}]), \n')
-                        f.write(f'\t.Z(O{i}[{j}])); \n')
+                        verilog += f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n'
+                        verilog += f'\t.A1(out_sel[{i*2}]), \n'
+                        verilog += f'\t.A2(I{i*2}[{j}]), \n'
+                        verilog += f'\t.B1(out_sel[{i*2+1}]), \n'
+                        verilog += f'\t.B2(I{i*2+1}[{j}]), \n'
+                        verilog += f'\t.Z(O{i}[{j}])); \n'
                     if (height % 2 != 0):
                         if (mux_type != mux_type.Const):
-                            f.write(f'\tAN2D0BWP16P90 inst_and_{j} ( \n')
-                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
-                            f.write(f'\t.A2(I{i*2+2}[{j}]), \n')
-                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
+                            verilog += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
+                            verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
+                            verilog += f'\t.A2(I{i*2+2}[{j}]), \n'
+                            verilog += f'\t.Z(O{i+1}[{j}])); \n'
                         else:
-                            f.write(f'\tAO22D0BWP16P90 inst_{i+1}_{j} ( \n')
-                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
-                            f.write(f'\t.A2(I{i*2+2}[{j}]), \n')
-                            f.write(f'\t.B1(out_sel[{i*2+3}]), \n')
-                            f.write(f'\t.B2(1\'b0), \n')
-                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
+                            verilog += f'\tAO22D0BWP16P90 inst_{i+1}_{j} ( \n'
+                            verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
+                            verilog += f'\t.A2(I{i*2+2}[{j}]), \n'
+                            verilog += f'\t.B1(out_sel[{i*2+3}]), \n'
+                            verilog += f'\t.B2(1\'b0), \n'
+                            verilog += f'\t.Z(O{i+1}[{j}])); \n'
                     else:
                         if (mux_type == mux_type.Const):
-                            f.write(f'\tAN2D0BWP16P90 inst_and_{j} ( \n')
-                            f.write(f'\t.A1(out_sel[{i*2+2}]), \n')
-                            f.write(f'\t.A2(1\'b0), \n')
-                            f.write(f'\t.Z(O{i+1}[{j}])); \n')
-                f.write("endmodule \n")
-                f.close()
+                            verilog += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
+                            verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
+                            verilog += f'\t.A2(1\'b0), \n'
+                            verilog += f'\t.Z(O{i+1}[{j}])); \n'
+                verilog += "endmodule \n"
+
                 targets = [f"mux_aoi_{height}_{width}"]
                 if mux_type == AOIMuxType.Const:
                     targets = [f"mux_aoi_const_{height}_{width}"]
-                    Mux = magma.DefineFromVerilogFile("./mux_aoi_const.sv",
-                                                      target_modules=targets,
-                                                      shallow=True)[0]
+                    Mux = magma.DefineFromVerilog(verilog,
+                                                  target_modules=targets,
+                                                  shallow=True)[0]
                 else:
                     targets = [f"mux_aoi_{height}_{width}"]
-                    Mux = magma.DefineFromVerilogFile("./mux_aoi.sv",
-                                                      target_modules=targets,
-                                                      shallow=True)[0]
+                    Mux = magma.DefineFromVerilog(verilog,
+                                                  target_modules=targets,
+                                                  shallow=True)[0]
                 mux = Mux()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
@@ -172,8 +167,6 @@ class AOIMuxWrapper(Generator):
         self.height = height
         self.width = width
         self.mux_type: AOIMuxType = mux_type
-        if mux_type == AOIMuxType.Const:
-            self.height += 1
 
         T = magma.Bits[self.width]
 
@@ -187,7 +180,10 @@ class AOIMuxWrapper(Generator):
             self.sel_bits = 0
             return
 
-        self.sel_bits = magma.bitutils.clog2(self.height)
+        if mux_type == AOIMuxType.Const:
+            assert magma.bitutils.clog2(height) == \
+                   magma.bitutils.clog2(height + 1)
+        self.sel_bits = magma.bitutils.clog2(height)
         self.add_ports(
             I=magma.In(magma.Array[self.height, T]),
             S=magma.In(magma.Bits[self.sel_bits]),
