@@ -43,19 +43,21 @@ class Generator(ABC):
     def name(self):
         pass
 
-    def add_port(self, name, T):
+    def add_port(self, name, T, skip_hash=False):
         if name in self.ports:
             raise ValueError(f"{name} is already a port")
         port_ref = PortReference(self, name, T)
         self.ports[name] = port_ref
-        self.__hash ^= hash(port_ref)
+        if not skip_hash:
+            self.__hash ^= hash(port_ref)
 
-    def remove_port(self, port_name: str):
+    def remove_port(self, port_name: str, skip_hash=False):
         # first remove it from self.ports
         assert port_name in self.ports
         port_ref = self.ports[port_name]
         # due to the property of xor, the hash will go back to the original one
-        self.__hash ^= hash(port_ref)
+        if not skip_hash:
+            self.__hash ^= hash(port_ref)
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
         # the only thing won't change is the port name
@@ -66,11 +68,11 @@ class Generator(ABC):
             elif conn2._name == port_name and conn2.owner() == self:
                 wires_to_remove.add((conn1, conn2))
         for conn1, conn2 in wires_to_remove:
-            self.remove_wire(conn1, conn2)
+            self.remove_wire(conn1, conn2, skip_hash=skip_hash)
 
-    def add_ports(self, **kwargs):
+    def add_ports(self, skip_hash=False, **kwargs):
         for name, T in kwargs.items():
-            self.add_port(name, T)
+            self.add_port(name, T, skip_hash)
 
     def set_hash(self, new_hash_value):
         self.__hash = new_hash_value
@@ -78,30 +80,33 @@ class Generator(ABC):
     def __hash__(self):
         return self.__hash
 
-    def wire(self, port0, port1):
+    def wire(self, port0, port1, skip_hash=False):
         assert isinstance(port0, PortReferenceBase)
         assert isinstance(port1, PortReferenceBase)
         if not get_debug_mode():
             connection = self.__sort_ports(port0, port1)
             self.wires.append(connection)
-            self.__hash = _hash_wire(self.__hash, connection)
+            if not skip_hash:
+                self.__hash = _hash_wire(self.__hash, connection)
         else:
             connection = self.__sort_ports(port0, port1)
             if connection not in self.wires:
                 self.wires.append(connection)
-                self.__hash = _hash_wire(self.__hash, connection)
+                if not skip_hash:
+                    self.__hash = _hash_wire(self.__hash, connection)
             else:
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
                               f"{port1.qualified_name()}")
 
-    def remove_wire(self, port0, port1):
+    def remove_wire(self, port0, port1, skip_hash=False):
         assert isinstance(port0, PortReferenceBase)
         assert isinstance(port1, PortReferenceBase)
         connection = self.__sort_ports(port0, port1)
         if connection in self.wires:
             self.wires.remove(connection)
-            self.__hash = _hash_wire(self.__hash, connection)
+            if not skip_hash:
+                self.__hash = _hash_wire(self.__hash, connection)
 
     def decl(self):
         io = []
