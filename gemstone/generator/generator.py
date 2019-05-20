@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from ordered_set import OrderedSet
 import warnings
-import magma
 from ..common.collections import DotDict
 from .port_reference import *
 
@@ -39,24 +38,29 @@ class Generator(ABC):
         # use class name as a hash init
         self.__hash = hash(self.__class__.__name__)
 
+        self.__skip_hash = False
+
+    def set_skip_hash(self, value: bool = True):
+        self.__skip_hash = value
+
     @abstractmethod
     def name(self):
         pass
 
-    def add_port(self, name, T, skip_hash=False):
+    def add_port(self, name, T):
         if name in self.ports:
             raise ValueError(f"{name} is already a port")
         port_ref = PortReference(self, name, T)
         self.ports[name] = port_ref
-        if not skip_hash:
+        if not self.__skip_hash:
             self.__hash ^= hash(port_ref)
 
-    def remove_port(self, port_name: str, skip_hash=False):
+    def remove_port(self, port_name: str):
         # first remove it from self.ports
         assert port_name in self.ports
         port_ref = self.ports[port_name]
         # due to the property of xor, the hash will go back to the original one
-        if not skip_hash:
+        if not self.__skip_hash:
             self.__hash ^= hash(port_ref)
         self.ports.pop(port_name)
         # then remove any wires connected with it. due to port cloning
@@ -68,11 +72,11 @@ class Generator(ABC):
             elif conn2._name == port_name and conn2.owner() == self:
                 wires_to_remove.add((conn1, conn2))
         for conn1, conn2 in wires_to_remove:
-            self.remove_wire(conn1, conn2, skip_hash=skip_hash)
+            self.remove_wire(conn1, conn2)
 
-    def add_ports(self, skip_hash=False, **kwargs):
+    def add_ports(self, **kwargs):
         for name, T in kwargs.items():
-            self.add_port(name, T, skip_hash)
+            self.add_port(name, T)
 
     def set_hash(self, new_hash_value):
         self.__hash = new_hash_value
@@ -80,32 +84,32 @@ class Generator(ABC):
     def __hash__(self):
         return self.__hash
 
-    def wire(self, port0, port1, skip_hash=False):
+    def wire(self, port0, port1):
         assert isinstance(port0, PortReferenceBase)
         assert isinstance(port1, PortReferenceBase)
         if not get_debug_mode():
             connection = self.__sort_ports(port0, port1)
             self.wires.append(connection)
-            if not skip_hash:
+            if not self.__skip_hash:
                 self.__hash = _hash_wire(self.__hash, connection)
         else:
             connection = self.__sort_ports(port0, port1)
             if connection not in self.wires:
                 self.wires.append(connection)
-                if not skip_hash:
+                if not self.__skip_hash:
                     self.__hash = _hash_wire(self.__hash, connection)
             else:
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
                               f"{port1.qualified_name()}")
 
-    def remove_wire(self, port0, port1, skip_hash=False):
+    def remove_wire(self, port0, port1):
         assert isinstance(port0, PortReferenceBase)
         assert isinstance(port1, PortReferenceBase)
         connection = self.__sort_ports(port0, port1)
         if connection in self.wires:
             self.wires.remove(connection)
-            if not skip_hash:
+            if not self.__skip_hash:
                 self.__hash = _hash_wire(self.__hash, connection)
 
     def decl(self):
