@@ -14,6 +14,6 @@ setup(
         "fault",
         "ordered_set",
         "hwtypes",
-        "genesis2",
+        "geneis2",
     ],
 )
