@@ -1,40 +1,15 @@
-language: python
-# python managed by conda until 3.7 available
-# python:
-# - '3.6'
-
-addons:
-  apt:
-    packages:
-    - verilator
-    - verilog
+dist: xenial
+language: minimal
+service: docker
 
 install:
-    # install conda for py 3.7
-    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b -p $TRAVIS_BUILD_DIR/miniconda
-    - export PATH=$TRAVIS_BUILD_DIR/miniconda/bin:$PATH
-    - hash -r
-    - conda config --set always_yes yes --set changeps1 no
-    - conda update -q conda
-    - conda create -q -n test-env python=3.7
-    - source activate test-env
-    - conda install pip
-    # End install conda
-
-    - pip install python-coveralls
-    - pip install pytest-cov pytest-codestyle
-    - pip install -e .
+    - docker pull keyiz/garnet-flow
+    - docker run -d -it --name gemstone keyiz/garnet-flow bash
+    - docker cp ../gemstone gemstone:/
+    - docker exec -i gemstone bash -c "pip install pytest python-coveralls"
+    - docker exec -i gemstone bash -c "pip install pytest-cov pytest-codestyle"
+    - docker exec -i gemstone bash -c "cd /gemstone && pip install -e ."
 
 script:
-    - pytest --codestyle gemstone
-             --cov gemstone
-             --ignore=filecmp.py
-             --ignore=Genesis2/
-             -v --cov-report term-missing tests
+    - docker exec -i gemstone bash -c "/gemstone/.travis/run.sh"
 
-
-# disable coveralls for now
-# after_success:
-#    - coveralls
