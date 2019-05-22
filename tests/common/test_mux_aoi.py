@@ -1,3 +1,7 @@
+import tempfile
+import glob
+import shutil
+import os
 import pytest
 from random import randint, choice
 import tempfile
@@ -33,14 +37,17 @@ def test_aoi_mux_wrapper(height, width):
         tester.poke(mux_circuit.S, BitVector[mux.sel_bits](i))
         tester.eval()
         tester.expect(mux_circuit.O, inputs[i])
+
     with tempfile.TemporaryDirectory() as tempdir:
+        for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
+            shutil.copy(aoi_mux, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
 
 
-# Keyi: the height cannot be 2^n - 1
-@pytest.mark.parametrize('height,width', [(choice([2, 4, 5, 6, 8, 9]),
+# Keyi: the height cannot be 2^n
+@pytest.mark.parametrize('height,width', [(choice([3, 5, 6, 7, 9]),
                                            randint(1, 32))
                                           for _ in range(5)])
 def test_aoi_const_mux_wrapper(height, width):
@@ -53,7 +60,6 @@ def test_aoi_const_mux_wrapper(height, width):
     undefined behavior.
     """
     mux = AOIMuxWrapper(height, width, AOIMuxType.Const)
-    assert mux.height == height
     assert mux.width == width
     assert mux.name() == \
         f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Const.name}"
@@ -72,6 +78,8 @@ def test_aoi_const_mux_wrapper(height, width):
             tester.expect(mux_circuit.O, 0)
 
     with tempfile.TemporaryDirectory() as tempdir:
+        for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
+            shutil.copy(aoi_mux, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
