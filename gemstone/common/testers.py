@@ -59,6 +59,14 @@ class BasicTester(Tester):
         self.poke(self._circuit.config.write, 0)
         self.step(2)
 
+    def done_config(self):
+        self.poke(self.clock, 0)
+        self.poke(self.reset_port, 0)
+        self.poke(self._circuit.config_read, 0)
+        self.poke(self._circuit.config_write, 0)
+        self.step(2)
+
+
     def reset(self):
         self.poke(self.reset_port, 1)
         self.step(2)
