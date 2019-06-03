@@ -35,6 +35,13 @@ class ConstPortReference(PortReferenceBase):
     def base_type(self):
         return type(self._value)
 
+    def __hash__(self):
+        return hash(self._value)
+
+    def __eq__(self, other):
+        return isinstance(other, ConstPortReference) \
+            and self._value == other._value
+
 
 def Const(value):
     return ConstPortReference(value)
