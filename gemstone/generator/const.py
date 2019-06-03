@@ -39,8 +39,11 @@ class ConstPortReference(PortReferenceBase):
         return hash(self._value)
 
     def __eq__(self, other):
-        return isinstance(other, ConstPortReference) \
-            and self._value == other._value
+        if not isinstance(other, ConstPortReference):
+            return False
+        if isinstance(self._value, int) and isinstance(other._value, int):
+            return self._value == other._value
+        return False
 
 
 def Const(value):

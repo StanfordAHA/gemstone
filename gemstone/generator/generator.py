@@ -161,7 +161,7 @@ class Generator(ABC):
         return _Circ
 
     def __sort_ports(self, port0, port1):
-        if id(port0) < id(port1):
+        if hash(port0) < hash(port1):
             return (port0, port1)
         else:
             return (port1, port0)
