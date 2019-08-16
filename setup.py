@@ -10,10 +10,10 @@ setup(
     ],
     install_requires=[
         "coreir==2.0.19",
-        "magma-lang",
-        "mantle",
+        "magma-lang==1.0.13",
+        "mantle==1.0.6",
         "fault",
         "ordered_set",
-        "hwtypes",
+        "hwtypes==1.0.13",
     ],
 )
