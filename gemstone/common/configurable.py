@@ -1,44 +1,12 @@
 import magma
 import mantle
 from ..generator.generator import Generator
+from ..generator.from_magma import FromMagma
+from ..generator.const import Const
 from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
 from .mux_wrapper import MuxWrapper
 from .zext_wrapper import ZextWrapper
-
-
-@magma.cache_definition
-def _generate_config_register(width, addr, addr_width,
-                              data_width, use_config_en):
-    T = magma.Bits[width]
-
-    class _ConfigRegister(magma.Circuit):
-        name = f"ConfigRegister_{width}_{addr_width}_{data_width}_{addr}"
-        IO = [
-            "clk", magma.In(magma.Clock),
-            "reset", magma.In(magma.AsyncReset),
-            "O", magma.Out(T),
-            "config_addr", magma.In(magma.Bits[addr_width]),
-            "config_data", magma.In(magma.Bits[data_width]),
-        ]
-        if use_config_en:
-            IO.extend(["config_en", magma.In(magma.Bit)])
-
-        @classmethod
-        def definition(io):
-            reg = mantle.Register(width,
-                                  has_ce=True,
-                                  has_async_reset=True)
-            magma.wire(io.clk, reg.CLK)
-            ce = (io.config_addr == magma.bits(addr, addr_width))
-            magma.wire(io.reset, reg.ASYNCRESET)
-            if use_config_en:
-                ce = ce & io.config_en
-            magma.wire(io.config_data[0:width], reg.I)
-            magma.wire(ce, reg.CE)
-            magma.wire(reg.O, io.O)
-
-    return _ConfigRegister
 
 
 def ConfigurationType(addr_width, data_width):
@@ -146,6 +114,12 @@ class ConfigRegister(Generator):
         if self.use_config_en:
             self.add_ports(config_en=magma.In(magma.Bit))
 
+        self.reg = FromMagma(mantle.DefineRegister(width,
+                                                   has_ce=True,
+                                                   has_async_reset=True))
+
+
+
     # TODO(rsetaluri): Implement this.
     def write(self, value):
         raise NotImplementedError()
@@ -169,8 +143,25 @@ class ConfigRegister(Generator):
         self.add_port("config_data", magma.In(magma.Bits[self.data_width]))
 
     def circuit(self):
-        return _generate_config_register(self.width, self.addr, self.addr_width,
-                                         self.data_width, self.use_config_en)
+        eq = FromMagma(mantle.DefineEQ(self.addr_width))
+        eq.instance_name = "EQ_ADDR"
+        self.wire(self.ports.config_addr, eq.ports.I0)
+        self.wire(Const(self.addr), eq.ports.I1)
+        if self.use_config_en:
+            and_ = FromMagma(mantle.DefineAnd(2))
+            and_.instance_name = "AND_ADDR"
+            self.wire(self.ports.config_en, and_.ports.I0)
+            self.wire(eq.ports.O, and_.ports.I1)
+            self.wire(and_.ports.O, self.reg.ports.CE)
+        else:
+            self.wire(eq.ports.O, self.reg.ports.CE)
+
+        self.wire(self.reg.ports.O, self.ports.O)
+        self.wire(self.reg.ports.CLK, self.ports.clk)
+        self.wire(self.reg.ports.ASYNCRESET, self.ports.reset)
+        self.wire(self.ports.config_data[0:self.width], self.reg.ports.I)
+
+        return super(ConfigRegister, self).circuit()
 
     def name(self):
         return f"ConfigRegister"\
