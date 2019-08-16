@@ -9,6 +9,7 @@ setup(
         "gemstone.common",
     ],
     install_requires=[
+        "coreir==2.0.19",
         "magma-lang",
         "mantle",
         "fault",
