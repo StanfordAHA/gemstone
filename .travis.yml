@@ -6,9 +6,12 @@ install:
     - docker pull keyiz/garnet-flow
     - docker run -d -it --name gemstone keyiz/garnet-flow bash
     - docker cp ../gemstone gemstone:/
+    - docker exec -i gemstone bash -c "cd /gemstone && pip install -e ."
+    # use pycoreir hack
+    - docker exec -i gemstone bash -c "pip uninstall -y coreir"
+    - docker exec -i gemstone bash -c "pip install pycoreir"
     - docker exec -i gemstone bash -c "pip install pytest python-coveralls"
     - docker exec -i gemstone bash -c "pip install pytest-cov pytest-codestyle"
-    - docker exec -i gemstone bash -c "cd /gemstone && pip install -e ."
 
 script:
     - docker exec -i gemstone bash -c "/gemstone/.travis/run.sh"
