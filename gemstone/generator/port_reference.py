@@ -37,6 +37,7 @@ class GetAttr(Op):
 class PortReferenceBase(ABC):
     def __init__(self):
         self._ops = []
+        self._connections = []
 
     @abstractmethod
     def get_port(self, inst):
@@ -92,6 +93,7 @@ class PortReference(PortReferenceBase):
     def clone(self):
         clone = PortReference(self._owner, self._name, self._T)
         clone._ops = self._ops.copy()
+        clone._connections = self._connections.copy()
         return clone
 
     def base_type(self):

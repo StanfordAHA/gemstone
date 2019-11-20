@@ -92,12 +92,16 @@ class Generator(ABC):
             self.wires.append(connection)
             if not self.__skip_hash:
                 self.__hash = _hash_wire(self.__hash, connection)
+            port0._connections.append(port1)
+            port1._connections.append(port0)
         else:
             connection = self.__sort_ports(port0, port1)
             if connection not in self.wires:
                 self.wires.append(connection)
                 if not self.__skip_hash:
                     self.__hash = _hash_wire(self.__hash, connection)
+                port0._connections.append(port1)
+                port1._connections.append(port0)
             else:
                 warnings.warn(f"skipping duplicate connection: "
                               f"{port0.qualified_name()}, "
@@ -111,6 +115,8 @@ class Generator(ABC):
             self.wires.remove(connection)
             if not self.__skip_hash:
                 self.__hash = _hash_wire(self.__hash, connection)
+            port0._connections.remove(port1)
+            port1._connections.remove(port0)
 
     def decl(self):
         io = []

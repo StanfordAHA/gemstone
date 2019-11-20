@@ -30,6 +30,7 @@ class ConstPortReference(PortReferenceBase):
         clone = ConstPortReference(self._value)
         clone._ops = self._ops.copy()
         clone._owner = self._owner
+        clone._connections = self._connections.copy()
         return clone
 
     def base_type(self):
