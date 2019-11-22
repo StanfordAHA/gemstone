@@ -128,8 +128,10 @@ class Generator(ABC):
         return children
 
     def circuit(self):
-        if self.__hash in _generator_cache:
-            return _generator_cache[self.__hash]
+        hash_ = self.__hash
+        hash_ ^= hash(self.name())
+        if hash_ in _generator_cache:
+            return _generator_cache[hash_]
 
         children = self.children()
         circuits = {}
