@@ -9,7 +9,7 @@ install:
     - docker exec -i gemstone bash -c "cd /gemstone && pip install -e ."
     # use pycoreir hack
     - docker exec -i gemstone bash -c "pip uninstall -y coreir"
-    - docker exec -i gemstone bash -c "pip install pycoreir"
+    - docker exec -i gemstone bash -c "pip install coreir>=2.0.50"
     - docker exec -i gemstone bash -c "pip install pytest python-coveralls"
     - docker exec -i gemstone bash -c "pip install pytest-cov pytest-codestyle"
 
