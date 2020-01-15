@@ -40,19 +40,19 @@ def test_mux_with_default_wrapper(num_inputs, width, sel_bits, default):
         tester.poke(mux_circuit.I[i], input_)
     tester.poke(mux_circuit.EN, 1)
     for i in range(num_inputs):
-        tester.poke(mux_circuit.S, BitVector(i, mux.sel_bits))
+        tester.poke(mux_circuit.S, BitVector[mux.sel_bits](i))
         tester.eval()
         tester.expect(mux_circuit.O, inputs[i])
     for _ in range(10):
         sel = choice(range(num_inputs, 2 ** sel_bits))
-        tester.poke(mux_circuit.S, BitVector(sel, mux.sel_bits))
+        tester.poke(mux_circuit.S, BitVector[mux.sel_bits](sel))
         tester.eval()
         tester.expect(mux_circuit.O, default)
     # Test that with EN=0, we get the default value, even with select being in
     # [0, num_inputs).
     tester.poke(mux_circuit.EN, 0)
     for i in range(num_inputs):
-        tester.poke(mux_circuit.S, BitVector(i, mux.sel_bits))
+        tester.poke(mux_circuit.S, BitVector[mux.sel_bits](i))
         tester.eval()
         tester.expect(mux_circuit.O, default)
     with tempfile.TemporaryDirectory() as tempdir:
