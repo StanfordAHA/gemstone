@@ -17,7 +17,7 @@ def test_configurable_model_smoke():
 
 def test_configurable_model_subclass():
     def value(v):
-        return BitVector(v, 32)
+        return BitVector[32](v)
 
     class Foo(ConfigurableModel(32, 32)):
         def __init__(self):
@@ -36,7 +36,7 @@ def test_configurable_model_subclass():
     assert f() == 0
 
     # Check that an address of the wrong type raises a value error.
-    addr = BitVector(0, 100)
+    addr = BitVector[100](0)
     try:
         f.config[addr] = data
         assert False
