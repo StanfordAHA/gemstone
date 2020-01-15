@@ -3,9 +3,9 @@ import magma as m
 
 def check_interfaces(magma_circuit, genesis_circuit,
                      type_mapping={
-                         "clk": m.ClockKind,
-                         "reset": m.AsyncResetKind,
-                         "config_en": m.EnableKind
+                         "clk": m.Clock,
+                         "reset": m.AsyncReset,
+                         "config_en": m.Enable
                      }):
     """
     This checks that the interface to the genesis circuit is

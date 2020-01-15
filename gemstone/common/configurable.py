@@ -42,11 +42,11 @@ def _generate_config_register(width, addr, addr_width,
 
 
 def ConfigurationType(addr_width, data_width):
-    return magma.Tuple(config_addr=magma.Bits[addr_width],
-                       config_data=magma.Bits[data_width],
-                       read=magma.Bits[1],
-                       write=magma.Bits[1]
-                       )
+    return magma.Product.from_fields("ConfigurationType",
+                                     dict(config_addr=magma.Bits[addr_width],
+                                          config_data=magma.Bits[data_width],
+                                          read=magma.Bits[1],
+                                          write=magma.Bits[1]))
 
 
 class Configurable(Generator):

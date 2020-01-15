@@ -30,7 +30,7 @@ def test_mux_wrapper(height, width):
     for i, input_ in enumerate(inputs):
         tester.poke(mux_circuit.I[i], input_)
     for i in range(height):
-        tester.poke(mux_circuit.S, BitVector(i, mux.sel_bits))
+        tester.poke(mux_circuit.S, BitVector[mux.sel_bits](i))
         tester.eval()
         tester.expect(mux_circuit.O, inputs[i])
     with tempfile.TemporaryDirectory() as tempdir:
