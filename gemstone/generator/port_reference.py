@@ -107,9 +107,9 @@ class PortReference(PortReferenceBase):
 
     @staticmethod
     def __get_bit_width(t):
-        if isinstance(t, magma.BitKind):
+        if issubclass(t, magma.Digital):
             return 1
-        if isinstance(t, magma.BitsKind):
+        if issubclass(t, magma.Bits):
             return len(t)
 
     def __hash__(self):
