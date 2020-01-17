@@ -1,8 +1,5 @@
 import magma
-import mantle
 from gemstone.generator.generator import Generator
-from gemstone.generator.from_magma import FromMagma
-from gemstone.common.mux_wrapper import MuxWrapper
 from gemstone.common.assign_abutted_pins import assign_abutted_pins
 
 
