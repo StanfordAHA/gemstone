@@ -31,7 +31,7 @@ def __reorder_pins(pin_dict, side_1, side_2):
     return pin_dict
             
 
-def assign_abutted_pins(primary: Generator, **kwargs):
+def assign_abutted_pins(primary: Generator, output_to_file=True, **kwargs):
     # Make sure kwargs are valid
     for side in kwargs.keys():
         if side not in ['left', 'right', 'top', 'bottom']:
@@ -56,12 +56,14 @@ def assign_abutted_pins(primary: Generator, **kwargs):
     pin_objs = __reorder_pins(pin_objs, 'left', 'right') 
     pin_objs = __reorder_pins(pin_objs, 'top', 'bottom') 
 
-    # Spit out the pin names for each side 
-    for side, pin_list in pin_objs.items():
-        filename = f"pinning_results/{side}.txt"
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        with open(filename, "w") as f:
-            for pin in pin_list:
-                f.write(f"{pin.qualified_name()}\n")
-        f.close()
+    # Spit out the pin names for each side
+    if output_to_file == True: 
+        for side, pin_list in pin_objs.items():
+            filename = f"pinning_results/{side}.txt"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, "w") as f:
+                for pin in pin_list:
+                    f.write(f"{pin.qualified_name()}\n")
+            f.close()
 
+    return pin_objs
