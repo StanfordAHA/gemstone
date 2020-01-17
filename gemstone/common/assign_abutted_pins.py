@@ -1,6 +1,6 @@
 import magma
 import warnings
-from gemstone.generator.generator import Generator
+from ..generator.generator import Generator
 import os
 
 # Use kwargs left, right, top, bottom to match other blocks
