@@ -7,6 +7,8 @@ import os
 # with correct side of primary block
 # Allowed kwargs : left, right, top, bottom
 
+# Helper function to get all connections to a pin that live outside
+# that pin's owner instance.
 def __get_external_connections(pin):
     ext_conns = []
     for conn in pin._connections:
@@ -14,6 +16,8 @@ def __get_external_connections(pin):
             ext_conns.append(conn)
     return ext_conns
 
+# Helper function to reorder pins such that the instance can be abutted with
+# other instances that have identical interfaces
 def __reorder_pins(pin_dict, side_1, side_2):
     s1_pins = pin_dict[side_1]
     s2_pins = pin_dict[side_2]
@@ -39,24 +43,35 @@ def assign_abutted_pins(primary: Generator, output_to_file=True, **kwargs):
 
     pin_objs = {'left': [], 'right': [], 'top': [], 'bottom': [], 'other': []}   
 
+    # First, ensure that all pins are assigned to the proper side by
+    # checking all external connections to the primary instance.
     for port in primary.ports.values():
         # Remove any internal connections
         conns = __get_external_connections(port)
         if len(conns) == 1:
+            owner_found = False
             for side, inst in kwargs.items():
+                # If a pin is connected to an adjacent instance
+                # put it on that side
                 if conns[0].owner() == inst:
                     pin_objs[side].append(port)
+                    owner_found = True
                     break
-        elif len(conns) == 0:
-            pin_objs['other'].append(port)
+            # If a pin isn't connected to an adjacent instance
+            # we don't know where to put it. Place it in other
+            if owner_found == False:
+                pin_objs['other'].append(port)
+        # If a pin isn't connected to any external pins, or it's connected
+        # to multiple don't know where to put it. Place it in other.
         else:
-            raise Exception('cannot abut port with fanout connection')
+            pin_objs['other'].append(port)
 
-    # Make L/R, T/B ordering consistent
+    # Ensure that Left/Right and Top/Bottom orderings are consistent
+    # to allow for abutment
     pin_objs = __reorder_pins(pin_objs, 'left', 'right') 
     pin_objs = __reorder_pins(pin_objs, 'top', 'bottom') 
 
-    # Spit out the pin names for each side
+    # Spit out the pin names for each side to separate files
     if output_to_file == True: 
         for side, pin_list in pin_objs.items():
             filename = f"pinning_results/{side}.txt"
