@@ -148,6 +148,10 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     targets = [f"mux_aoi_{height}_{width}"]
                     Mux = magma.DefineFromVerilog(verilog,
                                                   target_modules=targets)[0]
+                # NOTE(rsetaluri): We monkey-patch in the entire verilog string,
+                # as magma's FromVerilog only includes the lines relevant to the
+                # parsed module (not the entire file/string).
+                Mux.verilogFile = verilog
                 mux = Mux()
                 for i in range(height):
                     magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
