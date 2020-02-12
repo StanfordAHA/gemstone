@@ -9,7 +9,6 @@ setup(
         "gemstone.common",
     ],
     install_requires=[
-        "magma-lang",
         "mantle",
         "fault",
         "ordered_set",

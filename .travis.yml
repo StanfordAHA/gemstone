@@ -6,7 +6,7 @@ install:
     - docker pull keyiz/garnet-flow
     - docker run -d -it --name gemstone keyiz/garnet-flow bash
     - docker cp ../gemstone gemstone:/
-    - docker exec -i gemstone bash -c "cd /gemstone && pip install -e ."
+    - docker exec -i gemstone bash -c "cd /gemstone && pip install -r requirements.txt && pip install -e ."
     - docker exec -i gemstone bash -c "pip install pytest python-coveralls"
     - docker exec -i gemstone bash -c "pip install pytest-cov pytest-codestyle"
 
