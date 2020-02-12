@@ -1,1 +1,0 @@
--e git://github.com/phanrahan/magma.git@refactor-from-verilog-2#egg=magma-lang
