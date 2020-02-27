@@ -39,7 +39,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 num_sel = math.ceil(math.log(height, 2))
                 num_ops = math.ceil(height / 2)
             num_inputs = math.pow(2, num_sel)
-         # ======= MUX MODULE =========
+
+            # ======= MUX MODULE =========
             verilog = ""
             if mux_type == mux_type.Const:
                 verilog += f"module mux_aoi_const_{height}_{width} ( \n"
@@ -52,15 +53,18 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             else:
                 verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
             verilog += f'\toutput logic [{width-1} : 0] O); \n'
-         # Intermediate Signals
+
+            # Intermediate Signals
             verilog += f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n'
             for i in range(num_ops):
                 verilog += f'\tlogic  [{int(width)-1} : 0] O_int{i};\n'
-         # PRECODER INSTANTIATION #
+
+            # PRECODER INSTANTIATION #
             verilog += f'\nprecoder_{width}_{height} u_precoder ( \n'
             verilog += '\t.S(S), \n'
             verilog += '\t.out_sel(out_sel)); \n'
-         # MUX_LOGIC INSTANTIATION #
+
+            # MUX_LOGIC INSTANTIATION #
             verilog += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
             for i in range(height):
                 verilog += f'\t.I{i} (I{i}),\n'
@@ -68,18 +72,22 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             for i in range(num_ops - 1):
                 verilog += f'\t.O{i}(O_int{i}), \n'
             verilog += f'\t.O{num_ops-1}(O_int{num_ops-1})); \n'
-         # OR Logic
+
+            # OR Logic
             verilog += f'\tassign O = (  '
             for i in range(num_ops - 1):
                 verilog += f'\tO_int{i} | '
             verilog += f'\tO_int{num_ops-1} '
             verilog += f'\t); \n'
-         verilog += f'\nendmodule \n'
-         # ======== PRECODER MODULE ========
+
+            verilog += f'\nendmodule \n'
+
+            # ======== PRECODER MODULE ========
             verilog += f'\nmodule precoder_{width}_{height} (\n'
             verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
             verilog += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n'    # noqa
-         verilog += f'\nalways_comb begin: mux_sel\n'
+
+            verilog += f'\nalways_comb begin: mux_sel\n'
             verilog += f'\tcase (S) \n'
             for i in range(height):
                 data = format(int(math.pow(2, int(i))),
@@ -93,7 +101,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog += f'\tendcase \n'
             verilog += f'end \n'
             verilog += f'\nendmodule \n'
-         # ======== MUX_LOGIC MODULE ========
+
+            # ======== MUX_LOGIC MODULE ========
             verilog += f'\nmodule mux_logic_{width}_{height} ( \n'
             verilog += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
             for i in range(height):
@@ -101,7 +110,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             for i in range(num_ops - 1):
                 verilog += f'\toutput logic  [{width-1} : 0] O{i}, \n'
             verilog += f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n'
-         for j in range(width):
+
+            for j in range(width):
                 for i in range(math.floor(height / 2)):
                     verilog += f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n'
                     verilog += f'\t.A1(out_sel[{i*2}]), \n'
@@ -129,7 +139,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                         verilog += f'\t.A2(1\'b0), \n'
                         verilog += f'\t.Z(O{i+1}[{j}])); \n'
             verilog += "endmodule \n"
-         targets = [f"mux_aoi_{height}_{width}"]
+
+            targets = [f"mux_aoi_{height}_{width}"]
             if mux_type == AOIMuxType.Const:
                 targets = [f"mux_aoi_const_{height}_{width}"]
                 Mux = magma.DefineFromVerilog(verilog,
