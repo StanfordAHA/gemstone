@@ -118,6 +118,9 @@ class Generator(ABC):
             port0._connections.remove(port1)
             port1._connections.remove(port0)
 
+    def decl(self):
+        return {name: port.base_type() for name, port in self.ports.items()}
+
     def children(self):
         children = OrderedSet()
         for ports in self.wires:
@@ -140,7 +143,7 @@ class Generator(ABC):
 
         class _Circ(magma.Circuit):
             name = self.name()
-            io = magma.IO(**self.ports)
+            io = magma.IO(**self.decl())
 
             instances = {}
             for child in children:
