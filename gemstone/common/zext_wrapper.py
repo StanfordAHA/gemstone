@@ -13,9 +13,7 @@ def _generate_zext_wrapper(in_width, out_width):
             O=magma.Out(magma.Bits[out_width]),
         )
 
-        @classmethod
-        def definition(io):
-            magma.wire(magma.zext(io.I, diff), io.O)
+        magma.wire(magma.zext(io.I, diff), io.O)
 
     return _ZextWrapper
 
