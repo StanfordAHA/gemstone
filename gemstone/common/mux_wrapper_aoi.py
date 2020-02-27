@@ -26,7 +26,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
         if height > 1:
             ports["S"] = magma.In(magma.Bits[sel_bits])
 
-        io = magma.IO(ports)
+        io = magma.IO(**ports)
 
         if height <= 1:
             magma.wire(io.I[0], io.O)
