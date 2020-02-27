@@ -14,13 +14,13 @@ def _generate_config_register(width, addr, addr_width,
 
     class _ConfigRegister(magma.Circuit):
         name = f"ConfigRegister_{width}_{addr_width}_{data_width}_{addr}"
-        IO = [
-            "clk", magma.In(magma.Clock),
-            "reset", magma.In(magma.AsyncReset),
-            "O", magma.Out(T),
-            "config_addr", magma.In(magma.Bits[addr_width]),
-            "config_data", magma.In(magma.Bits[data_width]),
-        ]
+        io = magma.IO(
+            clk=magma.In(magma.Clock),
+            reset=magma.In(magma.AsyncReset),
+            O=magma.Out(T),
+            config_addr=magma.In(magma.Bits[addr_width]),
+            config_data=magma.In(magma.Bits[data_width]),
+        )
         if use_config_en:
             IO.extend(["config_en", magma.In(magma.Bit)])
 

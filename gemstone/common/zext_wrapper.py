@@ -8,10 +8,10 @@ def _generate_zext_wrapper(in_width, out_width):
 
     class _ZextWrapper(magma.Circuit):
         name = f"ZextWrapper_{in_width}_{out_width}"
-        IO = [
-            "I", magma.In(magma.Bits[in_width]),
-            "O", magma.Out(magma.Bits[out_width]),
-        ]
+        io = magma.IO(
+            I=magma.In(magma.Bits[in_width]),
+            O=magma.Out(magma.Bits[out_width]),
+        )
 
         @classmethod
         def definition(io):
