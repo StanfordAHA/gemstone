@@ -12,12 +12,15 @@ def _generate_mux_wrapper(height, width):
     class _MuxWrapper(magma.Circuit):
         name = f"MuxWrapper_{height}_{width}"
         in_height = max(1, height)
-        io = magma.IO(
-            I=magma.In(magma.Array[in_height, T]),
-            O=magma.Out(T),
-        )
+
+        ports = {
+            "I": magma.In(magma.Array[in_height, T]),
+            "O": magma.Out(T),
+        }
         if height > 1:
-            IO.extend(["S", magma.In(magma.Bits[sel_bits])])
+            ports["S"] = magma.In(magma.Bits[sel_bits])
+
+        io = magma.IO(ports)
 
         @classmethod
         def definition(io):
