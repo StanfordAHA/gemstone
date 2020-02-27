@@ -81,8 +81,8 @@ coreir_mux #(
 ) _join (
     .in0(in_data_0),
     .in1(in_data_1),
-    .out(_join_out),
-    .sel(in_sel[0])
+    .sel(in_sel[0]),
+    .out(_join_out)
 );
 assign out = _join_out;
 endmodule
@@ -90,8 +90,8 @@ endmodule
 module Mux2xOutBits32 (
     input [31:0] I0,
     input [31:0] I1,
-    output [31:0] O,
-    input S
+    input S,
+    output [31:0] O
 );
 wire [31:0] coreir_commonlib_mux2x32_inst0_out;
 commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
@@ -104,19 +104,19 @@ assign O = coreir_commonlib_mux2x32_inst0_out;
 endmodule
 
 module Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 (
-    input ASYNCRESET,
     input CE,
     input CLK,
     input [31:0] I,
-    output [31:0] O
+    output [31:0] O,
+    input ASYNCRESET
 );
 wire [31:0] enable_mux_O;
 wire [31:0] value_out;
 Mux2xOutBits32 enable_mux (
     .I0(value_out),
     .I1(I),
-    .O(enable_mux_O),
-    .S(CE)
+    .S(CE),
+    .O(enable_mux_O)
 );
 coreir_reg_arst #(
     .arst_posedge(1'b1),
@@ -124,8 +124,8 @@ coreir_reg_arst #(
     .init('h00000000),
     .width(32)
 ) value (
-    .arst(ASYNCRESET),
     .clk(CLK),
+    .arst(ASYNCRESET),
     .in(enable_mux_O),
     .out(value_out)
 );
@@ -135,8 +135,8 @@ endmodule
 module Mux2x32 (
     input [31:0] I0,
     input [31:0] I1,
-    output [31:0] O,
-    input S
+    input S,
+    output [31:0] O
 );
 wire [31:0] coreir_commonlib_mux2x32_inst0_out;
 commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
@@ -158,8 +158,8 @@ wire [31:0] Mux2x32_inst0_O;
 Mux2x32 Mux2x32_inst0 (
     .I0(I_0),
     .I1(I_1),
-    .O(Mux2x32_inst0_O),
-    .S(S[0])
+    .S(S[0]),
+    .O(Mux2x32_inst0_O)
 );
 assign O = Mux2x32_inst0_O;
 endmodule
@@ -320,20 +320,20 @@ MuxWithDefaultWrapper_2_32_8_0 MuxWithDefaultWrapper_2_32_8_0_inst0 (
     .S(config_config_addr)
 );
 ConfigRegister_32_8_32_0 dummy_1 (
-    .O(dummy_1_O),
     .clk(clk),
+    .reset(reset),
+    .O(dummy_1_O),
     .config_addr(config_config_addr),
     .config_data(config_config_data),
-    .config_en(config_write[0]),
-    .reset(reset)
+    .config_en(config_write[0])
 );
 ConfigRegister_32_8_32_1 dummy_2 (
-    .O(dummy_2_O),
     .clk(clk),
+    .reset(reset),
+    .O(dummy_2_O),
     .config_addr(config_config_addr),
     .config_data(config_config_data),
-    .config_en(config_write[0]),
-    .reset(reset)
+    .config_en(config_write[0])
 );
 assign data_out_16b = data_in_16b;
 assign data_out_1b = data_in_1b;
