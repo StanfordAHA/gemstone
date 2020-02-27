@@ -12,24 +12,25 @@ def _generate_mux_wrapper(height, width):
     class _MuxWrapper(magma.Circuit):
         name = f"MuxWrapper_{height}_{width}"
         in_height = max(1, height)
-        IO = [
-            "I", magma.In(magma.Array[in_height, T]),
-            "O", magma.Out(T),
-        ]
-        if height > 1:
-            IO.extend(["S", magma.In(magma.Bits[sel_bits])])
 
-        @classmethod
-        def definition(io):
-            if height <= 1:
-                magma.wire(io.I[0], io.O)
-            else:
-                mux = mantle.DefineMux(height, width)()
-                for i in range(height):
-                    magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
-                mux_in = io.S if sel_bits > 1 else io.S[0]
-                magma.wire(mux_in, mux.S)
-                magma.wire(mux.O, io.O)
+        ports = {
+            "I": magma.In(magma.Array[in_height, T]),
+            "O": magma.Out(T),
+        }
+        if height > 1:
+            ports["S"] = magma.In(magma.Bits[sel_bits])
+
+        io = magma.IO(**ports)
+
+        if height <= 1:
+            magma.wire(io.I[0], io.O)
+        else:
+            mux = mantle.DefineMux(height, width)()
+            for i in range(height):
+                magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
+            mux_in = io.S if sel_bits > 1 else io.S[0]
+            magma.wire(mux_in, mux.S)
+            magma.wire(mux.O, io.O)
 
     return _MuxWrapper
 

@@ -14,29 +14,28 @@ def _generate_config_register(width, addr, addr_width,
 
     class _ConfigRegister(magma.Circuit):
         name = f"ConfigRegister_{width}_{addr_width}_{data_width}_{addr}"
-        IO = [
-            "clk", magma.In(magma.Clock),
-            "reset", magma.In(magma.AsyncReset),
-            "O", magma.Out(T),
-            "config_addr", magma.In(magma.Bits[addr_width]),
-            "config_data", magma.In(magma.Bits[data_width]),
-        ]
+        ports = {
+            "clk": magma.In(magma.Clock),
+            "reset": magma.In(magma.AsyncReset),
+            "O": magma.Out(T),
+            "config_addr": magma.In(magma.Bits[addr_width]),
+            "config_data": magma.In(magma.Bits[data_width]),
+        }
         if use_config_en:
-            IO.extend(["config_en", magma.In(magma.Bit)])
+            ports["config_en"] = magma.In(magma.Bit)
+        io = magma.IO(**ports)
 
-        @classmethod
-        def definition(io):
-            reg = mantle.Register(width,
-                                  has_ce=True,
-                                  has_async_reset=True)
-            magma.wire(io.clk, reg.CLK)
-            ce = (io.config_addr == magma.bits(addr, addr_width))
-            magma.wire(io.reset, reg.ASYNCRESET)
-            if use_config_en:
-                ce = ce & io.config_en
-            magma.wire(io.config_data[0:width], reg.I)
-            magma.wire(ce, reg.CE)
-            magma.wire(reg.O, io.O)
+        reg = mantle.Register(width,
+                              has_ce=True,
+                              has_async_reset=True)
+        magma.wire(io.clk, reg.CLK)
+        ce = (io.config_addr == magma.bits(addr, addr_width))
+        magma.wire(io.reset, reg.ASYNCRESET)
+        if use_config_en:
+            ce = ce & io.config_en
+        magma.wire(io.config_data[0:width], reg.I)
+        magma.wire(ce, reg.CE)
+        magma.wire(reg.O, io.O)
 
     return _ConfigRegister
 

@@ -31,13 +31,11 @@ class CoreirWrap(Generator):
 
         class _CoreirWrapCircuit(magma.Circuit):
             name = self.name()
-            IO = self.decl()
+            io = magma.IO(**self.decl())
 
-            @classmethod
-            def definition(io):
-                wrapper = Wrapper()
-                magma.wire(io.I, wrapper.interface.ports["in"])
-                magma.wire(wrapper.out, io.O)
+            wrapper = Wrapper()
+            magma.wire(io.I, wrapper.interface.ports["in"])
+            magma.wire(wrapper.out, io.O)
 
         return _CoreirWrapCircuit
 
