@@ -118,12 +118,6 @@ class Generator(ABC):
             port0._connections.remove(port1)
             port1._connections.remove(port0)
 
-    def decl(self):
-        io = []
-        for name, port in self.ports.items():
-            io += [name, port.base_type()]
-        return io
-
     def children(self):
         children = OrderedSet()
         for ports in self.wires:
@@ -146,23 +140,21 @@ class Generator(ABC):
 
         class _Circ(magma.Circuit):
             name = self.name()
-            IO = self.decl()
+            io = magma.IO(**self.ports)
 
-            @classmethod
-            def definition(io):
-                instances = {}
-                for child in children:
-                    kwargs = {}
-                    if child.instance_name:
-                        kwargs["name"] = child.instance_name
-                    instances[child] = circuits[child](**kwargs)
-                instances[self] = io
-                for port0, port1 in self.wires:
-                    inst0 = instances[port0.owner()]
-                    inst1 = instances[port1.owner()]
-                    wire0 = port0.get_port(inst0)
-                    wire1 = port1.get_port(inst1)
-                    magma.wire(wire0, wire1)
+            instances = {}
+            for child in children:
+                kwargs = {}
+                if child.instance_name:
+                    kwargs["name"] = child.instance_name
+                instances[child] = circuits[child](**kwargs)
+            instances[self] = io
+            for port0, port1 in self.wires:
+                inst0 = instances[port0.owner()]
+                inst1 = instances[port1.owner()]
+                wire0 = port0.get_port(inst0)
+                wire1 = port1.get_port(inst1)
+                magma.wire(wire0, wire1)
 
         _generator_cache[self.__hash] = _Circ
 
