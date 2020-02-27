@@ -104,10 +104,10 @@ assign O = coreir_commonlib_mux2x32_inst0_out;
 endmodule
 
 module Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 (
-    input CE,
-    input CLK,
     input [31:0] I,
     output [31:0] O,
+    input CLK,
+    input CE,
     input ASYNCRESET
 );
 wire [31:0] enable_mux_O;
@@ -217,23 +217,23 @@ assign O = MuxWrapper_2_32_inst1_O;
 endmodule
 
 module ConfigRegister_32_8_32_1 (
-    output [31:0] O,
     input clk,
+    input reset,
+    output [31:0] O,
     input [7:0] config_addr,
     input [31:0] config_data,
-    input config_en,
-    input reset
+    input config_en
 );
 wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
 wire [7:0] const_1_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0 (
-    .ASYNCRESET(reset),
-    .CE(magma_Bit_and_inst0_out),
-    .CLK(clk),
     .I(config_data),
-    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O)
+    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O),
+    .CLK(clk),
+    .CE(magma_Bit_and_inst0_out),
+    .ASYNCRESET(reset)
 );
 coreir_const #(
     .value(8'h01),
@@ -257,23 +257,23 @@ assign O = Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_r
 endmodule
 
 module ConfigRegister_32_8_32_0 (
-    output [31:0] O,
     input clk,
+    input reset,
+    output [31:0] O,
     input [7:0] config_addr,
     input [31:0] config_data,
-    input config_en,
-    input reset
+    input config_en
 );
 wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
 wire [7:0] const_0_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0 (
-    .ASYNCRESET(reset),
-    .CE(magma_Bit_and_inst0_out),
-    .CLK(clk),
     .I(config_data),
-    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O)
+    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O),
+    .CLK(clk),
+    .CE(magma_Bit_and_inst0_out),
+    .ASYNCRESET(reset)
 );
 coreir_const #(
     .value(8'h00),
