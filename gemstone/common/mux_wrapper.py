@@ -22,17 +22,15 @@ def _generate_mux_wrapper(height, width):
 
         io = magma.IO(ports)
 
-        @classmethod
-        def definition(io):
-            if height <= 1:
-                magma.wire(io.I[0], io.O)
-            else:
-                mux = mantle.DefineMux(height, width)()
-                for i in range(height):
-                    magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
-                mux_in = io.S if sel_bits > 1 else io.S[0]
-                magma.wire(mux_in, mux.S)
-                magma.wire(mux.O, io.O)
+        if height <= 1:
+            magma.wire(io.I[0], io.O)
+        else:
+            mux = mantle.DefineMux(height, width)()
+            for i in range(height):
+                magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
+            mux_in = io.S if sel_bits > 1 else io.S[0]
+            magma.wire(mux_in, mux.S)
+            magma.wire(mux.O, io.O)
 
     return _MuxWrapper
 
