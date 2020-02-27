@@ -31,7 +31,7 @@ class CoreirWrap(Generator):
 
         class _CoreirWrapCircuit(magma.Circuit):
             name = self.name()
-            IO = self.decl()
+            io = magma.IO(**self.ports)
 
             @classmethod
             def definition(io):
