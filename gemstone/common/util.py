@@ -40,3 +40,18 @@ def check_files_equal(file1_name, file2_name):
                 for line in diff:
                     sys.stderr.write(line)
     return result
+
+
+def compress_config_data(config_data):
+    # config is reg_addr, value format
+    reg_map = {}
+    for addr, value in config_data:
+        if addr not in reg_map:
+            reg_map[addr] = 0
+        # we assume it's already shifted, by get_config_data method etc
+        reg_map[addr] = reg_map[addr] | value
+    result = []
+    for addr, value in reg_map.items():
+        if value != 0:
+            result.append((addr, value))
+    return result

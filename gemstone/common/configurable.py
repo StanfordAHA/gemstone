@@ -5,6 +5,7 @@ from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
 from .mux_wrapper import MuxWrapper
 from .zext_wrapper import ZextWrapper
+from .slice_wrapper import SliceWrapper
 
 
 @magma.cache_definition
@@ -52,6 +53,9 @@ class Configurable(Generator):
     def __init__(self, config_addr_width, config_data_width):
         super().__init__()
 
+        self.__registers = []
+        self.__register_cache = {}
+        self.__register_map = {}
         self.registers = DotDict()
 
         self.config_addr_width = config_addr_width
@@ -69,29 +73,89 @@ class Configurable(Generator):
     def add_config(self, name, width):
         if name in self.registers:
             raise ValueError(f"{name} is already a register")
-        register = ConfigRegister(width, True, name=name)
-        self.registers[name] = register
+        self.__register_cache[name] = width
+        # ideally we should create create the slice wrapper here. since at
+        # this point we don't know the exact size, we need to able to resize
+        # the port later. however, the framework is not set up to do runtime
+        # changes on port width, so we need to be creative here
+        # 1. we create a full sized slice wrapper
+        # 2. remove the input port
+        # 3. later on when we actually create the registers, resize the input
+        slice_wrapper = SliceWrapper(self.config_data_width, 0, width,
+                                     name=name)
+        slice_wrapper.ports.pop("I")
+        self.registers[name] = slice_wrapper
 
     def add_configs(self, **kwargs):
         for name, width in kwargs.items():
             self.add_config(name, width)
 
+    def __create_register(self, working_set):
+        reg_width = working_set[-1][-1]
+        assert reg_width <= self.config_data_width, \
+            f"register width ({reg_width} is larger than config " \
+            f"addr width ({self.config_data_width}"
+        # create a register
+        idx = len(self.__registers)
+        reg = ConfigRegister(reg_width, True, name=f"config_reg_{idx}")
+        self.__registers.append(reg)
+        reg.set_addr(idx)
+        reg.set_addr_width(self.config_addr_width)
+        reg.set_data_width(self.config_data_width)
+
+        self.wire(self.ports.config.config_addr, reg.ports.config_addr)
+        self.wire(self.ports.config.config_data, reg.ports.config_data)
+        self.wire(self.ports.config.write[0], reg.ports.config_en)
+        self.wire(self.ports.reset, reg.ports.reset)
+
+        for name, lo, hi in working_set:
+            # need to create a slice
+            slice_wrapper = self.registers[name]
+            slice_wrapper.base_width = reg_width
+            slice_wrapper.lo = lo
+            slice_wrapper.hi = hi
+            slice_wrapper.add_ports(I=magma.In(magma.Bits[reg_width]))
+            self.wire(reg.ports.O, slice_wrapper.ports.I)
+            # create map
+            self.__register_map[name] = (idx, lo, hi)
+
+        working_set.clear()
+
+    def get_config_data(self, name, value):
+        idx, lo, hi = self.__register_map[name]
+        width = hi - lo
+        assert value < (1 << width)
+        return idx, value << lo
+
+    def get_reg_idx(self, name):
+        return self.__register_map[name][0]
+
     def _setup_config(self):
         # Sort the registers by it's name. this will be the order of config addr
         # index.
-        config_names = list(self.registers.keys())
+        # notice that we also do register packing, where small registers will
+        # be packed together to fit in the config addr size, which in most case,
+        # is 32
+        reg_addr_offset = 0
+        working_set = []
+        config_names = list(self.__register_cache.keys())
         config_names.sort()
-        for idx, config_name in enumerate(config_names):
-            reg = self.registers[config_name]
-            # Set the configuration registers.
-            reg.set_addr(idx)
-            reg.set_addr_width(self.config_addr_width)
-            reg.set_data_width(self.config_data_width)
+        for config_name in config_names:
+            reg_width = self.__register_cache[config_name]
+            # try fit into the word boundrary
+            if reg_width + reg_addr_offset > self.config_data_width:
+                # we need to create a register based on the working set
+                # create the reg
+                self.__create_register(working_set)
+                reg_addr_offset = 0
 
-            self.wire(self.ports.config.config_addr, reg.ports.config_addr)
-            self.wire(self.ports.config.config_data, reg.ports.config_data)
-            self.wire(self.ports.config.write[0], reg.ports.config_en)
-            self.wire(self.ports.reset, reg.ports.reset)
+            lo = reg_addr_offset
+            hi = reg_addr_offset + reg_width
+            working_set.append((config_name, lo, hi))
+            reg_addr_offset += reg_width
+
+        if working_set:
+            self.__create_register(working_set)
 
         def _zext(port, old_width, new_width):
             if old_width == new_width:
@@ -101,7 +165,7 @@ class Configurable(Generator):
             return zext.ports.O
 
         # read_config_data output.
-        num_config_reg = len(config_names)
+        num_config_reg = len(self.__registers)
         if num_config_reg > 1:
             self.read_config_data_mux = MuxWrapper(num_config_reg,
                                                    self.config_data_width)
@@ -112,13 +176,11 @@ class Configurable(Generator):
             self.wire(self.read_config_data_mux.ports.O,
                       self.ports.read_config_data)
 
-            for idx, config_name in enumerate(config_names):
-                reg = self.registers[config_name]
+            for idx, reg in enumerate(self.__registers):
                 zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
         elif num_config_reg == 1:
-            config_name = config_names[0]
-            reg = self.registers[config_name]
+            reg = self.__registers[0]
             zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
             self.wire(zext_out, self.ports.read_config_data)
 
