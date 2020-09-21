@@ -1,11 +1,15 @@
-module coreir_ult #(
-    parameter width = 1
-) (
-    input [width-1:0] in0,
-    input [width-1:0] in1,
-    output out
+module dummy_2 (
+    input [31:0] I,
+    output [31:0] O
 );
-  assign out = in0 < in1;
+assign O = I;
+endmodule
+
+module dummy_1 (
+    input [31:0] I,
+    output [31:0] O
+);
+assign O = I;
 endmodule
 
 module coreir_reg_arst #(
@@ -70,8 +74,7 @@ module corebit_and (
 endmodule
 
 module commonlib_muxn__N2__width32 (
-    input [31:0] in_data_0,
-    input [31:0] in_data_1,
+    input [31:0] in_data [1:0],
     input [0:0] in_sel,
     output [31:0] out
 );
@@ -79,8 +82,8 @@ wire [31:0] _join_out;
 coreir_mux #(
     .width(32)
 ) _join (
-    .in0(in_data_0),
-    .in1(in_data_1),
+    .in0(in_data[0]),
+    .in1(in_data[1]),
     .sel(in_sel[0]),
     .out(_join_out)
 );
@@ -94,9 +97,11 @@ module Mux2xOutBits32 (
     output [31:0] O
 );
 wire [31:0] coreir_commonlib_mux2x32_inst0_out;
+wire [31:0] coreir_commonlib_mux2x32_inst0_in_data [1:0];
+assign coreir_commonlib_mux2x32_inst0_in_data[1] = I1;
+assign coreir_commonlib_mux2x32_inst0_in_data[0] = I0;
 commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
-    .in_data_0(I0),
-    .in_data_1(I1),
+    .in_data(coreir_commonlib_mux2x32_inst0_in_data),
     .in_sel(S),
     .out(coreir_commonlib_mux2x32_inst0_out)
 );
@@ -121,7 +126,7 @@ Mux2xOutBits32 enable_mux (
 coreir_reg_arst #(
     .arst_posedge(1'b1),
     .clk_posedge(1'b1),
-    .init('h00000000),
+    .init(32'h00000000),
     .width(32)
 ) value (
     .clk(CLK),
@@ -139,9 +144,11 @@ module Mux2x32 (
     output [31:0] O
 );
 wire [31:0] coreir_commonlib_mux2x32_inst0_out;
+wire [31:0] coreir_commonlib_mux2x32_inst0_in_data [1:0];
+assign coreir_commonlib_mux2x32_inst0_in_data[1] = I1;
+assign coreir_commonlib_mux2x32_inst0_in_data[0] = I0;
 commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
-    .in_data_0(I0),
-    .in_data_1(I1),
+    .in_data(coreir_commonlib_mux2x32_inst0_in_data),
     .in_sel(S),
     .out(coreir_commonlib_mux2x32_inst0_out)
 );
@@ -149,71 +156,18 @@ assign O = coreir_commonlib_mux2x32_inst0_out;
 endmodule
 
 module MuxWrapper_2_32 (
-    input [31:0] I_0,
-    input [31:0] I_1,
+    input [31:0] I [1:0],
     output [31:0] O,
     input [0:0] S
 );
 wire [31:0] Mux2x32_inst0_O;
 Mux2x32 Mux2x32_inst0 (
-    .I0(I_0),
-    .I1(I_1),
+    .I0(I[0]),
+    .I1(I[1]),
     .S(S[0]),
     .O(Mux2x32_inst0_O)
 );
 assign O = Mux2x32_inst0_O;
-endmodule
-
-module MuxWithDefaultWrapper_2_32_8_0 (
-    input [0:0] EN,
-    input [31:0] I_0,
-    input [31:0] I_1,
-    output [31:0] O,
-    input [7:0] S
-);
-wire [31:0] MuxWrapper_2_32_inst0_O;
-wire [31:0] MuxWrapper_2_32_inst1_O;
-wire and_inst0_out;
-wire [31:0] const_0_32_out;
-wire [7:0] const_2_8_out;
-wire coreir_ult8_inst0_out;
-MuxWrapper_2_32 MuxWrapper_2_32_inst0 (
-    .I_0(I_0),
-    .I_1(I_1),
-    .O(MuxWrapper_2_32_inst0_O),
-    .S(S[0])
-);
-MuxWrapper_2_32 MuxWrapper_2_32_inst1 (
-    .I_0(const_0_32_out),
-    .I_1(MuxWrapper_2_32_inst0_O),
-    .O(MuxWrapper_2_32_inst1_O),
-    .S(and_inst0_out)
-);
-corebit_and and_inst0 (
-    .in0(coreir_ult8_inst0_out),
-    .in1(EN[0]),
-    .out(and_inst0_out)
-);
-coreir_const #(
-    .value('h00000000),
-    .width(32)
-) const_0_32 (
-    .out(const_0_32_out)
-);
-coreir_const #(
-    .value(8'h02),
-    .width(8)
-) const_2_8 (
-    .out(const_2_8_out)
-);
-coreir_ult #(
-    .width(8)
-) coreir_ult8_inst0 (
-    .in0(S),
-    .in1(const_2_8_out),
-    .out(coreir_ult8_inst0_out)
-);
-assign O = MuxWrapper_2_32_inst1_O;
 endmodule
 
 module ConfigRegister_32_8_32_1 (
@@ -309,34 +263,45 @@ module DummyCore (
     output [31:0] read_config_data,
     input reset
 );
-wire [31:0] MuxWithDefaultWrapper_2_32_8_0_inst0_O;
-wire [31:0] dummy_1_O;
-wire [31:0] dummy_2_O;
-MuxWithDefaultWrapper_2_32_8_0 MuxWithDefaultWrapper_2_32_8_0_inst0 (
-    .EN(config_read),
-    .I_0(dummy_1_O),
-    .I_1(dummy_2_O),
-    .O(MuxWithDefaultWrapper_2_32_8_0_inst0_O),
-    .S(config_config_addr)
+wire [31:0] MuxWrapper_2_32_inst0_O;
+wire [31:0] config_reg_0_O;
+wire [31:0] config_reg_1_O;
+wire [31:0] dummy_1_inst0_O;
+wire [31:0] dummy_2_inst0_O;
+wire [31:0] MuxWrapper_2_32_inst0_I [1:0];
+assign MuxWrapper_2_32_inst0_I[1] = config_reg_1_O;
+assign MuxWrapper_2_32_inst0_I[0] = config_reg_0_O;
+MuxWrapper_2_32 MuxWrapper_2_32_inst0 (
+    .I(MuxWrapper_2_32_inst0_I),
+    .O(MuxWrapper_2_32_inst0_O),
+    .S(config_config_addr[0])
 );
-ConfigRegister_32_8_32_0 dummy_1 (
+ConfigRegister_32_8_32_0 config_reg_0 (
     .clk(clk),
     .reset(reset),
-    .O(dummy_1_O),
+    .O(config_reg_0_O),
     .config_addr(config_config_addr),
     .config_data(config_config_data),
     .config_en(config_write[0])
 );
-ConfigRegister_32_8_32_1 dummy_2 (
+ConfigRegister_32_8_32_1 config_reg_1 (
     .clk(clk),
     .reset(reset),
-    .O(dummy_2_O),
+    .O(config_reg_1_O),
     .config_addr(config_config_addr),
     .config_data(config_config_data),
     .config_en(config_write[0])
+);
+dummy_1 dummy_1_inst0 (
+    .I(config_reg_0_O),
+    .O(dummy_1_inst0_O)
+);
+dummy_2 dummy_2_inst0 (
+    .I(config_reg_1_O),
+    .O(dummy_2_inst0_O)
 );
 assign data_out_16b = data_in_16b;
 assign data_out_1b = data_in_1b;
-assign read_config_data = MuxWithDefaultWrapper_2_32_8_0_inst0_O;
+assign read_config_data = MuxWrapper_2_32_inst0_O;
 endmodule
 
