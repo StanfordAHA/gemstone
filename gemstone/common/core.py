@@ -58,6 +58,10 @@ class ConfigurableCore(Core, Configurable):
         Core.__init__(self)
         Configurable.__init__(self, config_addr_width, config_data_width)
 
+        # set to true will allow it skip reg compression on this feature
+        # during the bitstream generation stage
+        self.skip_compression = False
+
     @abstractmethod
     def get_config_bitstream(self, instr):
         pass
@@ -75,6 +79,10 @@ class CoreFeature(Generator):
 
         self.__index = index
         self.__parent = parent_core
+
+        # set to true will allow it skip reg compression on this feature
+        # during the bitstream generation stage
+        self.skip_compression = False
 
     def name(self):
         return f"{self.__parent.name()}_FEATURE_{self.__index}"
