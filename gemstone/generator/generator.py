@@ -168,3 +168,6 @@ class Generator(ABC):
             return (port0, port1)
         else:
             return (port1, port0)
+
+    def convert(self, port, converter):
+        return ConvertedPortReference(port, converter)

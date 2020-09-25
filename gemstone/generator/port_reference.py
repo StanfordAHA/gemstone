@@ -116,3 +116,12 @@ class PortReference(PortReferenceBase):
         return hash(self._name) ^ \
             hash(PortReference.__get_bit_width(self._T)) ^ \
             hash(self._owner.name())
+
+
+class ConvertedPortReference(PortReference):
+    def __init__(self, reference, converter):
+        super().__init__(reference._owner, reference._name, reference._T)
+        self._converter = converter
+
+    def get_port(self, inst):
+        return self._converter(super().get_port(inst))

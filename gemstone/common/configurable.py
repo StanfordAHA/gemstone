@@ -35,7 +35,7 @@ def _generate_config_register(width, addr, addr_width,
         if use_config_en:
             ce = ce & io.config_en
         magma.wire(io.config_data[0:width], reg.I)
-        magma.wire(ce, reg.CE)
+        magma.wire(magma.enable(ce), reg.CE)
         magma.wire(reg.O, io.O)
 
     return _ConfigRegister
