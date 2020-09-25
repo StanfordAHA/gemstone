@@ -116,3 +116,19 @@ class PortReference(PortReferenceBase):
         return hash(self._name) ^ \
             hash(PortReference.__get_bit_width(self._T)) ^ \
             hash(self._owner.name())
+
+
+class ConvertedPortReference(PortReference):
+    @classmethod
+    def make_from(cls, reference):
+        return cls(reference._owner, reference._name, reference._T)
+
+
+class EnablePortReference(ConvertedPortReference):
+    def get_port(self, inst):
+        return magma.enable(super().get_port(inst))
+
+
+class AsyncResetPortReference(ConvertedPortReference):
+    def get_port(self, inst):
+        return magma.asyncreset(super().get_port(inst))
