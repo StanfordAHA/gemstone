@@ -169,8 +169,5 @@ class Generator(ABC):
         else:
             return (port1, port0)
 
-    def as_enable(self, port):
-        return EnablePortReference.make_from(port)
-
-    def as_async_reset(self, port):
-        return AsyncResetPortReference.make_from(port)
+    def convert(self, port, converter):
+        return ConvertedPortReference(port, converter)

@@ -119,16 +119,9 @@ class PortReference(PortReferenceBase):
 
 
 class ConvertedPortReference(PortReference):
-    @classmethod
-    def make_from(cls, reference):
-        return cls(reference._owner, reference._name, reference._T)
+    def __init__(self, reference, converter):
+        super().__init__(reference._owner, reference._name, reference._T)
+        self._converter = converter
 
-
-class EnablePortReference(ConvertedPortReference):
     def get_port(self, inst):
-        return magma.enable(super().get_port(inst))
-
-
-class AsyncResetPortReference(ConvertedPortReference):
-    def get_port(self, inst):
-        return magma.asyncreset(super().get_port(inst))
+        return self._converter(super().get_port(inst))
