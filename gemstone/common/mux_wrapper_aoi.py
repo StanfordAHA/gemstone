@@ -17,6 +17,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
 
     class _MuxWrapper(magma.Circuit):
         name = f"MuxWrapperAOIImpl_{height}_{width}"
+        coreir_metadata = {"inline_single_instance": False}
         in_height = max(1, height)
 
         ports = {
