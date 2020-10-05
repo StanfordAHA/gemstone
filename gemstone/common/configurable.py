@@ -90,6 +90,9 @@ class Configurable(Generator):
         for name, width in kwargs.items():
             self.add_config(name, width)
 
+    def get_reg_info(self, name):
+        return self.__register_map[name]
+
     def __create_register(self, working_set):
         reg_width = working_set[-1][-1]
         assert reg_width <= self.config_data_width, \
