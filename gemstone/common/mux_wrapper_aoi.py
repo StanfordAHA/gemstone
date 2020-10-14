@@ -144,12 +144,12 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             targets = [f"mux_aoi_{height}_{width}"]
             if mux_type == AOIMuxType.Const:
                 targets = [f"mux_aoi_const_{height}_{width}"]
-                Mux = magma.DefineFromVerilog(verilog,
-                                              target_modules=targets)[0]
+                Mux = magma.define_from_verilog(verilog,
+                                                target_modules=targets)[0]
             else:
                 targets = [f"mux_aoi_{height}_{width}"]
-                Mux = magma.DefineFromVerilog(verilog,
-                                              target_modules=targets)[0]
+                Mux = magma.define_from_verilog(verilog,
+                                                target_modules=targets)[0]
             # NOTE(rsetaluri): We monkey-patch in the entire verilog string,
             # as magma's FromVerilog only includes the lines relevant to the
             # parsed module (not the entire file/string).
