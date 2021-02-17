@@ -100,15 +100,21 @@ class Configurable(m.CircuitBuilder):
     def get_reg_idx(self, name):
         idx, _, _ = self.get_reg_info(name)
 
+    def _config(self):
+        return self._port("config")
+
+    def _read_config_data(self):
+        return self._port("read_config_data")
+
     def _finalize(self):
         self._register_set.finalize()
         registers = self._register_set.registers() 
-        config = self._port("config")
+        config = self._config()
         for reg in registers:
             reg.config_addr @= config.config_addr
             reg.config_data @= config.config_data
             reg.config_en @= config.write
-        read_config_data = self._port("read_config_data")
+        read_config_data = self._read_config_data()
         data_width = len(read_config_data)
         # Connect read_config_data based on the number of actual hardware
         # registers (not the number of logical registers).
@@ -121,5 +127,3 @@ class Configurable(m.CircuitBuilder):
             sel = config.config_addr[:m.clog2(len(outputs))]
             data = m.mux(outputs, sel)
         read_config_data @= m.zext_to(data, read_config_data)
-        
-            
