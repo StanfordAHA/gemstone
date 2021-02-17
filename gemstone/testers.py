@@ -29,7 +29,7 @@ class ConfigurationTester(FunctionalTester):
         self.step()
 
 
-# Use this for tests without functional models
+# Use this for tests without functional models.
 class BasicTester(Tester):
     def __init__(self, circuit, clock, reset_port=None):
         super().__init__(circuit, clock)
@@ -42,12 +42,11 @@ class BasicTester(Tester):
         self.poke(self._circuit.config.config_data, data)
         self.poke(self._circuit.config.read, 0)
         # We can use assert_wr switch to check that no reconfiguration
-        # occurs when write = 0
+        # occurs when write = 0.
         if(assert_wr):
             self.poke(self._circuit.config.write, 1)
         else:
             self.poke(self._circuit.config.write, 0)
-        #
         self.step(2)
         self.poke(self._circuit.config.write, 0)
 

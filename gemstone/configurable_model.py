@@ -1,5 +1,6 @@
 from hwtypes import BitVector
-from .model import Model
+
+from gemstone.model import Model
 
 
 def ConfigurableModel(config_data_width, config_addr_width):
