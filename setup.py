@@ -5,8 +5,6 @@ setup(
     name='gemstone',
     packages=[
         "gemstone",
-        "gemstone.generator",
-        "gemstone.common",
     ],
     install_requires=[
         "magma-lang>=2.0.7",
