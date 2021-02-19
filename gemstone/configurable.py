@@ -2,8 +2,8 @@ import functools
 
 import magma as m
 
-from gemstone.common.common import disallow_post_finalization, Finalizable
-from gemstone.common.config_register import ConfigRegister
+from gemstone.common import disallow_post_finalization, Finalizable
+from gemstone.config_register import ConfigRegister
 
 
 @functools.cache
