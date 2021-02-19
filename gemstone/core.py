@@ -1,6 +1,6 @@
 import abc
 import dataclasses
-import typing
+from typing import Dict, List, Union
 
 import magma as m
 
@@ -32,10 +32,10 @@ class Core(m.CircuitBuilder):
     def outputs(self):
         raise NotImplementedError()
 
-    def features(self) -> List[typing.Union["Core", "CoreFeature"]]:
+    def features(self) -> List[Union["Core", "CoreFeature"]]:
         return [self]
 
-    def pnr_info(self) -> typing.Union[PnRTag, typing.List[PnRTag]]:
+    def pnr_info(self) -> Union[PnRTag, List[PnRTag]]:
         tag = self.name[0]
         priority_major = Core._DEFAULT_PRIORITY
         priority_minor = Core._DEFAULT_PRIORITY
