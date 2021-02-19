@@ -1,7 +1,7 @@
 from gemstone.configurable import Configurable
 from gemstone.config_register import ConfigRegister
 from gemstone.configurable_model import ConfigurableModel
-from gemstone.core import PnrTag, Core, ConfigurableCore, CoreFeature
+from gemstone.core import PnRTag, Core, ConfigurableCore, CoreFeature
 from gemstone.model import Model
 from gemstone.run_verilog_sim import (IrunCommand, irun_available,
                                       iverilog_available,
