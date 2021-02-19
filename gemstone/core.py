@@ -4,7 +4,7 @@ import typing
 
 import magma as m
 
-from gemstone.common.configurable import Configurable
+from gemstone.configurable import Configurable
 
 
 @dataclasses.dataclass(frozen=True, eq=True)
