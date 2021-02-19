@@ -57,11 +57,11 @@ class ConfigurableCore(Core, Configurable):
         # during the bitstream generation stage.
         self.skip_compression = False
 
-    @abstractmethod
+    @abc.abstractmethod
     def get_config_bitstream(self, instr):
         raise NotImplementedError()
 
-    @abstractmethod
+    @abc.abstractmethod
     def instruction_type(self):
         raise NotImplementedError()
 
