@@ -6,7 +6,7 @@ from gemstone.common import disallow_post_finalization, Finalizable
 from gemstone.config_register import ConfigRegister
 
 
-@functools.cache
+@functools.lru_cache(maxsize=None)
 def _configuration_type(addr_width, data_width):
     fields = dict(config_addr=m.Bits[addr_width],
                   config_data=m.Bits[data_width], read=m.Bit, write=m.Bit)
