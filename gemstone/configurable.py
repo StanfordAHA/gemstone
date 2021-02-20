@@ -73,7 +73,7 @@ class _RegisterSet(Finalizable):
 class Configurable(m.CircuitBuilder):
     def __init__(self, name, addr_width, data_width):
         super().__init__(name)
-        self.add_ports(
+        self._add_ports(
             clk=m.In(m.Clock),
             reset=m.In(m.AsyncReset),
             config=_configuration_type(addr_width, data_width),
