@@ -32,6 +32,9 @@ class Finalizable(abc.ABC):
         return self._finalized
 
     @abc.abstractmethod
+    def _finalize(self):
+        raise NotImplementedError()
+
     def finalize(self, *args, **kwargs):
         if self._finalized:
             raise MultipleFinalizationError()
