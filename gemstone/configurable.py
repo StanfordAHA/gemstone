@@ -10,7 +10,7 @@ from gemstone.config_register import ConfigRegister
 def _configuration_type(addr_width, data_width):
     fields = dict(config_addr=m.Bits[addr_width],
                   config_data=m.Bits[data_width], read=m.Bit, write=m.Bit)
-    return magm.Product.from_fields("ConfigurationType", fields)
+    return m.Product.from_fields("ConfigurationType", fields)
 
 
 class _RegisterSet(Finalizable):
