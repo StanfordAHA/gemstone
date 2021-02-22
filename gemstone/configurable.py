@@ -80,17 +80,19 @@ class Configurable(m.CircuitBuilder):
             config=_configuration_type(addr_width, data_width),
             read_config_data=m.Out(m.Bits[data_width]),
         )
-        self._register_set = _RegisterSet(addr_width, data_width)
+        self.__register_set = _RegisterSet(addr_width, data_width)
+        self.__values = {}
 
     def add_config(self, name, width):
-        self._register_set.add_register(name, width)
+        self.__register_set.add_register(name, width)
+        self.__values[name] = m.Bits[width]()
 
     def add_configs(self, **kwargs):
         for name, width in kwargs.items():
             self.add_config(name, width)
 
     def get_reg_info(self, name):
-        return self._register_set.get_memory_map(name)
+        return self.__register_set.get_memory_map(name)
 
     def get_config_data(self, name, value):
         idx, lo, hi = self.get_reg_info(name)
@@ -107,9 +109,12 @@ class Configurable(m.CircuitBuilder):
     def _read_config_data(self):
         return self._port("read_config_data")
 
+    def _get_value(self, name):
+        return self.__values[name]
+
     def _finalize(self):
-        self._register_set.finalize()
-        registers = self._register_set.registers() 
+        self.__register_set.finalize()
+        registers = self.__register_set.registers()
         config = self._config()
         for reg in registers:
             reg.config_addr @= config.config_addr
@@ -128,3 +133,6 @@ class Configurable(m.CircuitBuilder):
             sel = config.config_addr[:m.clog2(len(outputs))]
             data = m.mux(outputs, sel)
         read_config_data @= m.zext_to(data, read_config_data)
+        # Drive place-holders for values.
+        for name, value in self.__values.items():
+            value @= self.__register_set.get_value(name)
