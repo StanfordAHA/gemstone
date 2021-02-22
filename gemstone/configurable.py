@@ -15,6 +15,7 @@ def _configuration_type(addr_width, data_width):
 
 class _RegisterSet(Finalizable):
     def __init__(self, addr_width, data_width):
+        super().__init__()
         self._addr_width = addr_width
         self._data_width = data_width
         self._staged_register_widths = {}
