@@ -18,7 +18,7 @@ def disallow_post_finalization(fn):
     def _wrapped(this, *args, **kwargs):
         if this.finalized:
             raise PostFinalizationError()
-        return fn(*args, **kwargs)
+        return fn(this, *args, **kwargs)
 
     return _wrapped
 
