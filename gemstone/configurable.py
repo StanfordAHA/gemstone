@@ -46,13 +46,15 @@ class _RegisterSet(Finalizable):
         # maximally sized registers (given this iteration order).
         for name in sorted(self._staged_register_widths.keys()):
             width = self._staged_register_widths[name]
-            if width + current_width > self._data_width:
+            new_width = current_width + width
+            if new_width > self._data_width:
                 index = len(registers)
                 ckt = ConfigRegister(
                     current_width, index, self._addr_width, self._data_width)
                 registers.append(ckt(name=f"config_reg_{index}"))
-            new_width = current_width + width
-            memory_map[name] = (len(registers), current_width, new_width)
+                current_width = 0
+                new_width = width
+            memory_map[name] = len(registers), current_width, new_width
             current_width = new_width
         values = {}
         for name, (idx, lo, hi) in memory_map.items():
