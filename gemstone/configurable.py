@@ -139,6 +139,10 @@ class Configurable(m.CircuitBuilder):
 
     def get_reg_idx(self, name):
         idx, _, _ = self.get_reg_info(name)
+        return idx
+
+    def get_configs(self):
+        return list(self.__values.keys())
 
     def _config(self):
         return self._port("config")
