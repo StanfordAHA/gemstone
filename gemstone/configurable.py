@@ -13,6 +13,44 @@ def _configuration_type(addr_width, data_width):
     return m.Product.from_fields("ConfigurationType", fields)
 
 
+class _RegisterFinalizer(Finalizable):
+    def __init__(self, max_width, inst_callback):
+        super().__init__()
+        self._max_width = max_width
+        self._inst_callback = inst_callback
+        self._registers = {}
+        self._memory_map = {}
+        self._current_width = 0
+
+    @property
+    def registers(self):
+        return self._registers.copy()
+
+    @property
+    def memory_map(self):
+        return self._memory_map.copy()
+
+    def _finalize_register(self):
+        index = len(self._registers)
+        reg = self._inst_callback(width=self._current_width, addr=index)
+        self._registers.append(reg)
+        self._current_width = 0
+
+    @disallow_post_finalization
+    def consume(self, name, width):
+        if self._current_width + width > self._max_width:
+            self._finalize_register()
+        new_width = self._current_width + width
+        self._memory_map[name] = (
+            len(self._registers), self._current_width, new_width)
+        self._current_width = new_width
+
+    def _finalize(self):
+        if not (self._current_width > 0):
+            return
+        self._finalize_register()
+
+
 class _RegisterSet(Finalizable):
     def __init__(self, addr_width, data_width):
         super().__init__()
@@ -38,30 +76,26 @@ class _RegisterSet(Finalizable):
         self._staged_register_widths[name] = width
 
     def _finalize(self):
-        registers = []
-        memory_map = {}
-        current_width = 0
+
+        def _inst_callback(width, addr):
+            ckt = ConfigRegister(
+                width, addr, self._addr_width, self._data_width)
+            return ckt(name=f"config_reg_{addr}")
+
+        finalizer = _RegisterFinalizer(
+            max_width=self._data_width, inst_callback=_inst_callback)
         # Iteration (and therefore address assignment) order is based on
         # ascending name of register. Individual registers are packed into
         # maximally sized registers (given this iteration order).
         for name in sorted(self._staged_register_widths.keys()):
             width = self._staged_register_widths[name]
-            new_width = current_width + width
-            if new_width > self._data_width:
-                index = len(registers)
-                ckt = ConfigRegister(
-                    current_width, index, self._addr_width, self._data_width)
-                registers.append(ckt(name=f"config_reg_{index}"))
-                current_width = 0
-                new_width = width
-            memory_map[name] = len(registers), current_width, new_width
-            current_width = new_width
-        values = {}
-        for name, (idx, lo, hi) in memory_map.items():
-            values[name] = registers[idx].O[lo:hi]
-        self._registers = registers
-        self._memory_map = memory_map
-        self._values = values
+            finalizer.consume(name, width)
+        finalizer.finalize()
+        self._registers = finalizer.registers
+        self._memory_map = finalizer.memory_map
+        self._values = {}
+        for name, (idx, lo, hi) in self._memory_map.items():
+            self._values[name] = self._registers[idx].O[lo:hi]
 
     def registers(self):
         return self._registers.copy()
