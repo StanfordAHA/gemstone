@@ -173,7 +173,7 @@ class Configurable(m.CircuitBuilder):
             data = registers[0].O
         else:
             outputs = [m.zext_to(reg.O, data_width) for reg in registers]
-            sel = config.config_addr[:m.clog2(len(outputs))]
+            sel = config.config_addr[:m.bitutils.clog2(len(outputs))]
             data = m.mux(outputs, sel)
         read_config_data @= m.zext_to(data, len(read_config_data))
         # Drive place-holders for values.
