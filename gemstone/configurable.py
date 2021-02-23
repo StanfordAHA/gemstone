@@ -8,8 +8,9 @@ from gemstone.config_register import ConfigRegister
 
 @functools.lru_cache(maxsize=None)
 def _configuration_type(addr_width, data_width):
-    fields = dict(config_addr=m.Bits[addr_width],
-                  config_data=m.Bits[data_width], read=m.Bit, write=m.Bit)
+    fields = dict(config_addr=m.In(m.Bits[addr_width]),
+                  config_data=m.In(m.Bits[data_width]),
+                  read=m.In(m.Bit), write=m.In(m.Bit))
     return m.Product.from_fields("ConfigurationType", fields)
 
 
@@ -78,8 +79,8 @@ class _RegisterSet(Finalizable):
     def _finalize(self):
 
         def _inst_callback(width, addr):
-            ckt = ConfigRegister(
-                width, addr, self._addr_width, self._data_width)
+            ckt = ConfigRegister(width, addr, self._addr_width,
+                                 self._data_width, use_config_en=True)
             return ckt(name=f"config_reg_{addr}")
 
         finalizer = _RegisterFinalizer(
@@ -162,14 +163,15 @@ class Configurable(m.CircuitBuilder):
         # Connect read_config_data based on the number of actual hardware
         # registers (not the number of logical registers).
         if len(registers) < 1:
-            data = m.bits(0, data_width)
+            # NOTE(rsetaluri): data_width - 1 is hack due to magma's zext.
+            data = m.bits(0, data_width - 1)
         elif len(registers) == 1:
             data = registers[0].O
         else:
             outputs = [m.zext_to(reg.O, data_width) for reg in registers]
             sel = config.config_addr[:m.clog2(len(outputs))]
             data = m.mux(outputs, sel)
-        read_config_data @= m.zext_to(data, read_config_data)
+        read_config_data @= m.zext_to(data, len(read_config_data))
         # Drive place-holders for values.
         for name, value in self.__values.items():
             value @= self.__register_set.get_value(name)
