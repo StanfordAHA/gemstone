@@ -18,7 +18,7 @@ class ConfigRegister(m.Generator2):
         reg = m.Register(T=m.Bits[width],
                          reset_type=m.AsyncReset,
                          has_enable=True)()
-        ce = (io.config_addr == addr)
+        ce = (self.io.config_addr == addr)
         if use_config_en:
-            ce = ce & io.config_en
-        io.O @= reg(I=io.config_data[:width], CE=ce)
+            ce = ce & self.io.config_en
+        self.io.O @= reg(I=self.io.config_data[:width], CE=ce)
