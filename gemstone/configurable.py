@@ -148,6 +148,7 @@ class Configurable(m.CircuitBuilder):
     def _get_value(self, name):
         return self.__values[name]
 
+    @m.builder_method
     def _finalize(self):
         self.__register_set.finalize()
         registers = self.__register_set.registers()
