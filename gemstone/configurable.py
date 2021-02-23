@@ -18,7 +18,7 @@ class _RegisterFinalizer(Finalizable):
         super().__init__()
         self._max_width = max_width
         self._inst_callback = inst_callback
-        self._registers = {}
+        self._registers = []
         self._memory_map = {}
         self._current_width = 0
 
