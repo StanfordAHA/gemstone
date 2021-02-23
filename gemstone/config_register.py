@@ -15,7 +15,9 @@ class ConfigRegister(m.Generator2):
         )
         if use_config_en:
             self.io += m.IO(config_en=m.In(m.Bit))
-        reg = m.Register(T=m.Bits[width], has_ce=True, has_async_reset=True)()
+        reg = m.Register(T=m.Bits[width],
+                         reset_type=m.AsyncReset,
+                         has_enable=True)()
         ce = (io.config_addr == addr)
         if use_config_en:
             ce = ce & io.config_en
