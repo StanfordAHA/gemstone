@@ -42,118 +42,118 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             num_inputs = math.pow(2, num_sel)
 
             # ======= MUX MODULE =========
-            verilog = ""
+            verilog_str = ""
             if mux_type == mux_type.Const:
-                verilog += f"module mux_aoi_const_{height}_{width} ( \n"
+                verilog_str += f"module mux_aoi_const_{height}_{width} ( \n"
             else:
-                verilog += f"module mux_aoi_{height}_{width} ( \n"
+                verilog_str += f"module mux_aoi_{height}_{width} ( \n"
             for i in range(height):
-                verilog += f'\tinput logic  [{width-1} : 0] I{i}, \n'
+                verilog_str += f'\tinput logic  [{width-1} : 0] I{i}, \n'
             if num_sel == 1:
-                verilog += f'input logic S, \n'
+                verilog_str += f'input logic S, \n'
             else:
-                verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
-            verilog += f'\toutput logic [{width-1} : 0] O); \n'
+                verilog_str += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
+            verilog_str += f'\toutput logic [{width-1} : 0] O); \n'
 
             # Intermediate Signals
-            verilog += f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n'
+            verilog_str += f'\n\tlogic  [{int(num_inputs)-1} : 0] out_sel;\n'
             for i in range(num_ops):
-                verilog += f'\tlogic  [{int(width)-1} : 0] O_int{i};\n'
+                verilog_str += f'\tlogic  [{int(width)-1} : 0] O_int{i};\n'
 
             # PRECODER INSTANTIATION #
-            verilog += f'\nprecoder_{width}_{height} u_precoder ( \n'
-            verilog += '\t.S(S), \n'
-            verilog += '\t.out_sel(out_sel)); \n'
+            verilog_str += f'\nprecoder_{width}_{height} u_precoder ( \n'
+            verilog_str += '\t.S(S), \n'
+            verilog_str += '\t.out_sel(out_sel)); \n'
 
             # MUX_LOGIC INSTANTIATION #
-            verilog += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
+            verilog_str += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
             for i in range(height):
-                verilog += f'\t.I{i} (I{i}),\n'
-            verilog += f'\t.out_sel(out_sel), \n'
+                verilog_str += f'\t.I{i} (I{i}),\n'
+            verilog_str += f'\t.out_sel(out_sel), \n'
             for i in range(num_ops - 1):
-                verilog += f'\t.O{i}(O_int{i}), \n'
-            verilog += f'\t.O{num_ops-1}(O_int{num_ops-1})); \n'
+                verilog_str += f'\t.O{i}(O_int{i}), \n'
+            verilog_str += f'\t.O{num_ops-1}(O_int{num_ops-1})); \n'
 
             # OR Logic
-            verilog += f'\tassign O = (  '
+            verilog_str += f'\tassign O = (  '
             for i in range(num_ops - 1):
-                verilog += f'\tO_int{i} | '
-            verilog += f'\tO_int{num_ops-1} '
-            verilog += f'\t); \n'
+                verilog_str += f'\tO_int{i} | '
+            verilog_str += f'\tO_int{num_ops-1} '
+            verilog_str += f'\t); \n'
 
-            verilog += f'\nendmodule \n'
+            verilog_str += f'\nendmodule \n'
 
             # ======== PRECODER MODULE ========
-            verilog += f'\nmodule precoder_{width}_{height} (\n'
-            verilog += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
-            verilog += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n'    # noqa
+            verilog_str += f'\nmodule precoder_{width}_{height} (\n'
+            verilog_str += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
+            verilog_str += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n'    # noqa
 
-            verilog += f'\nalways_comb begin: mux_sel\n'
-            verilog += f'\tcase (S) \n'
+            verilog_str += f'\nalways_comb begin: mux_sel\n'
+            verilog_str += f'\tcase (S) \n'
             for i in range(height):
                 data = format(int(math.pow(2, int(i))),
                               'b').zfill(int(num_inputs))
                 data0 = format(int(math.pow(2, int(height))),
                                'b').zfill(int(num_inputs))
-                verilog += f'\t\t{num_sel}\'d{i}    :   out_sel = {int(num_inputs)}\'b{data};\n'   # noqa
+                verilog_str += f'\t\t{num_sel}\'d{i}    :   out_sel = {int(num_inputs)}\'b{data};\n'   # noqa
             if mux_type == AOIMuxType.Const:
-                verilog += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n'    # noqa
-            verilog += f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;\n'
-            verilog += f'\tendcase \n'
-            verilog += f'end \n'
-            verilog += f'\nendmodule \n'
+                verilog_str += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n'    # noqa
+            verilog_str += f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;\n'
+            verilog_str += f'\tendcase \n'
+            verilog_str += f'end \n'
+            verilog_str += f'\nendmodule \n'
 
             # ======== MUX_LOGIC MODULE ========
-            verilog += f'\nmodule mux_logic_{width}_{height} ( \n'
-            verilog += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
+            verilog_str += f'\nmodule mux_logic_{width}_{height} ( \n'
+            verilog_str += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
             for i in range(height):
-                verilog += f'\tinput logic  [{width-1} : 0] I{i}, \n'
+                verilog_str += f'\tinput logic  [{width-1} : 0] I{i}, \n'
             for i in range(num_ops - 1):
-                verilog += f'\toutput logic  [{width-1} : 0] O{i}, \n'
-            verilog += f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n'
+                verilog_str += f'\toutput logic  [{width-1} : 0] O{i}, \n'
+            verilog_str += f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n'
 
             for j in range(width):
                 for i in range(math.floor(height / 2)):
-                    verilog += f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n'
-                    verilog += f'\t.A1(out_sel[{i*2}]), \n'
-                    verilog += f'\t.A2(I{i*2}[{j}]), \n'
-                    verilog += f'\t.B1(out_sel[{i*2+1}]), \n'
-                    verilog += f'\t.B2(I{i*2+1}[{j}]), \n'
-                    verilog += f'\t.Z(O{i}[{j}])); \n'
+                    verilog_str += f'\tAO22D0BWP16P90 inst_{i}_{j} ( \n'
+                    verilog_str += f'\t.A1(out_sel[{i*2}]), \n'
+                    verilog_str += f'\t.A2(I{i*2}[{j}]), \n'
+                    verilog_str += f'\t.B1(out_sel[{i*2+1}]), \n'
+                    verilog_str += f'\t.B2(I{i*2+1}[{j}]), \n'
+                    verilog_str += f'\t.Z(O{i}[{j}])); \n'
                 if (height % 2 != 0):
                     if (mux_type != mux_type.Const):
-                        verilog += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
-                        verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
-                        verilog += f'\t.A2(I{i*2+2}[{j}]), \n'
-                        verilog += f'\t.Z(O{i+1}[{j}])); \n'
+                        verilog_str += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i*2+2}]), \n'
+                        verilog_str += f'\t.A2(I{i*2+2}[{j}]), \n'
+                        verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
                     else:
-                        verilog += f'\tAO22D0BWP16P90 inst_{i+1}_{j} ( \n'
-                        verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
-                        verilog += f'\t.A2(I{i*2+2}[{j}]), \n'
-                        verilog += f'\t.B1(out_sel[{i*2+3}]), \n'
-                        verilog += f'\t.B2(1\'b0), \n'
-                        verilog += f'\t.Z(O{i+1}[{j}])); \n'
+                        verilog_str += f'\tAO22D0BWP16P90 inst_{i+1}_{j} ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i*2+2}]), \n'
+                        verilog_str += f'\t.A2(I{i*2+2}[{j}]), \n'
+                        verilog_str += f'\t.B1(out_sel[{i*2+3}]), \n'
+                        verilog_str += f'\t.B2(1\'b0), \n'
+                        verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
                 else:
                     if (mux_type == mux_type.Const):
-                        verilog += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
-                        verilog += f'\t.A1(out_sel[{i*2+2}]), \n'
-                        verilog += f'\t.A2(1\'b0), \n'
-                        verilog += f'\t.Z(O{i+1}[{j}])); \n'
-            verilog += "endmodule \n"
+                        verilog_str += f'\tAN2D0BWP16P90 inst_and_{j} ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i*2+2}]), \n'
+                        verilog_str += f'\t.A2(1\'b0), \n'
+                        verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
+            verilog_str += "endmodule \n"
 
             targets = [f"mux_aoi_{height}_{width}"]
             if mux_type == AOIMuxType.Const:
                 targets = [f"mux_aoi_const_{height}_{width}"]
-                Mux = magma.define_from_verilog(verilog,
+                Mux = magma.define_from_verilog(verilog_str,
                                                 target_modules=targets)[0]
             else:
                 targets = [f"mux_aoi_{height}_{width}"]
-                Mux = magma.define_from_verilog(verilog,
+                Mux = magma.define_from_verilog(verilog_str,
                                                 target_modules=targets)[0]
             # NOTE(rsetaluri): We monkey-patch in the entire verilog string,
             # as magma's FromVerilog only includes the lines relevant to the
             # parsed module (not the entire file/string).
-            Mux.verilogFile = verilog
+            Mux.verilogFile = verilog_str
             mux = Mux()
             for i in range(height):
                 magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
