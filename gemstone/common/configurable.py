@@ -142,7 +142,7 @@ class Configurable(Generator):
             # directly like kratos. ideally we should not instantiate logic gates
             # use a NOT gate
             not_gate = FromMagma(mantle.DefineInvert(1))
-            not_gate.instance_name = "not_config_db"
+            not_gate.instance_name = f"not_config_db_{idx}"
             self.wire(self.ports.config_db, not_gate.ports.I[0])
             # use an AND gate
             and_gate = FromMagma(mantle.DefineAnd(2))
@@ -162,7 +162,7 @@ class Configurable(Generator):
 
         if self.double_buffer:
             # create a 2-1 MUX, could have been an one-liner in SV
-            mux_select = MuxWrapper(2, reg_width, f"{reg.instance_name}_db_sel")
+            mux_select = MuxWrapper(2, reg_width, f"{reg.instance_name}_db_sel_{idx}")
             self.wire(mux_select.ports.S[0], self.ports.use_db)
             # set it up in such way that if use_db is 0 (default), we will use the normal reg
             self.wire(mux_select.ports.I[0], reg.ports.O)
