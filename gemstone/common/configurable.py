@@ -116,7 +116,7 @@ class Configurable(Generator):
         if self.double_buffer:
             reg_db = ConfigRegister(reg_width, True, name=f"config_reg_{idx}_db")
             # set the reg map
-            self.double_buffer_map[reg.instance_name] = reg_db.instance_name
+            self.double_buffer_map[reg.instance_name] = reg_db
         else:
             reg_db = None
 
@@ -240,11 +240,30 @@ class Configurable(Generator):
                       self.ports.read_config_data)
 
             for idx, reg in enumerate(self.__registers):
-                zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
+                # we need to create a mux to select read config as well
+                if self.double_buffer:
+                    mux = MuxWrapper(2, reg.width, f"read_data_mux_db_{idx}")
+                    self.wire(mux.ports.S[0], self.ports.config_db)
+                    self.wire(mux.ports.I[0], reg.ports.O)
+                    reg_db = self.double_buffer_map[reg.instance_name]
+                    self.wire(mux.ports.I[1], reg_db.ports.O)
+                    reg_out = mux.ports.O
+                else:
+                    reg_out = reg.ports.O
+                zext_out = _zext(reg_out, reg.width, self.config_data_width)
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
         elif num_config_reg == 1:
             reg = self.__registers[0]
-            zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
+            if self.double_buffer:
+                mux = MuxWrapper(2, reg.width, f"read_data_mux_db")
+                self.wire(mux.ports.S[0], self.ports.config_db)
+                self.wire(mux.ports.I[0], reg.ports.O)
+                reg_db = self.double_buffer_map[reg.instance_name]
+                self.wire(mux.ports.I[1], reg_db.ports.O)
+                reg_out = mux.ports.O
+            else:
+                reg_out = reg.ports.O
+            zext_out = _zext(reg_out, reg.width, self.config_data_width)
             self.wire(zext_out, self.ports.read_config_data)
 
 
