@@ -1,6 +1,7 @@
 import magma
 import mantle
 from ..generator.generator import Generator
+from ..generator.from_magma import FromMagma
 from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
 from .mux_wrapper import MuxWrapper
@@ -50,7 +51,7 @@ def ConfigurationType(addr_width, data_width):
 
 
 class Configurable(Generator):
-    def __init__(self, config_addr_width, config_data_width):
+    def __init__(self, config_addr_width, config_data_width, double_buffer=False):
         super().__init__()
 
         self.__registers = []
@@ -63,12 +64,22 @@ class Configurable(Generator):
 
         self.read_config_data_mux: MuxWrapper = None
 
+        self.double_buffer = double_buffer
+        self.double_buffer_map = {}
+
         # Ports for reconfiguration.
         self.add_ports(
             clk=magma.In(magma.Clock),
             reset=magma.In(magma.AsyncReset),
             read_config_data=magma.Out(magma.Bits[config_data_width]),
         )
+
+        if double_buffer:
+            # add extra ports to deal with double buffer
+            self.add_ports(
+                config_db=magma.In(magma.Bit),
+                use_db=magma.In(magma.Bit)
+            )
 
     def add_config(self, name, width):
         if name in self.registers:
@@ -102,14 +113,63 @@ class Configurable(Generator):
         idx = len(self.__registers)
         reg = ConfigRegister(reg_width, True, name=f"config_reg_{idx}")
         self.__registers.append(reg)
+        if self.double_buffer:
+            reg_db = ConfigRegister(reg_width, True, name=f"config_reg_{idx}_db")
+            # set the reg map
+            self.double_buffer_map[reg.instance_name] = reg_db
+        else:
+            reg_db = None
+
         reg.set_addr(idx)
         reg.set_addr_width(self.config_addr_width)
         reg.set_data_width(self.config_data_width)
 
-        self.wire(self.ports.config.config_addr, reg.ports.config_addr)
-        self.wire(self.ports.config.config_data, reg.ports.config_data)
-        self.wire(self.ports.config.write[0], reg.ports.config_en)
-        self.wire(self.ports.reset, reg.ports.reset)
+        if self.double_buffer:
+            reg_db.set_addr(idx)
+            reg_db.set_addr_width(self.config_addr_width)
+            reg_db.set_data_width(self.config_data_width)
+
+        if self.double_buffer:
+            self.wire(self.ports.config.config_addr, reg.ports.config_addr)
+            self.wire(self.ports.config.config_data, reg.ports.config_data)
+            self.wire(self.ports.reset, reg.ports.reset)
+            self.wire(self.ports.config.config_addr, reg_db.ports.config_addr)
+            self.wire(self.ports.config.config_data, reg_db.ports.config_data)
+            self.wire(self.ports.reset, reg_db.ports.reset)
+
+            # the enable needs to be computed from the selection
+            # notice that things can be much easier if gemstone/magma allows generating statements
+            # directly like kratos. ideally we should not instantiate logic gates
+            # use a NOT gate
+            not_gate = FromMagma(mantle.DefineInvert(1))
+            not_gate.instance_name = f"not_config_db_{idx}"
+            self.wire(self.ports.config_db, not_gate.ports.I[0])
+            # use an AND gate
+            and_gate = FromMagma(mantle.DefineAnd(2))
+            self.wire(and_gate.ports.I0, not_gate.ports.O[0])
+            self.wire(and_gate.ports.I1, self.ports.config.write[0])
+            self.wire(and_gate.ports.O, reg.ports.config_en)
+            # use another AND gate
+            and_gate_db = FromMagma(mantle.DefineAnd(2))
+            self.wire(and_gate_db.ports.I0, self.ports.config_db)
+            self.wire(and_gate_db.ports.I1, self.ports.config.write[0])
+            self.wire(and_gate_db.ports.O, reg_db.ports.config_en)
+        else:
+            self.wire(self.ports.config.config_addr, reg.ports.config_addr)
+            self.wire(self.ports.config.config_data, reg.ports.config_data)
+            self.wire(self.ports.config.write[0], reg.ports.config_en)
+            self.wire(self.ports.reset, reg.ports.reset)
+
+        if self.double_buffer:
+            # create a 2-1 MUX, could have been an one-liner in SV
+            mux_select = MuxWrapper(2, reg_width, f"{reg.instance_name}_db_sel_{idx}")
+            self.wire(mux_select.ports.S[0], self.ports.use_db)
+            # set it up in such way that if use_db is 0 (default), we will use the normal reg
+            self.wire(mux_select.ports.I[0], reg.ports.O)
+            self.wire(mux_select.ports.I[1], reg_db.ports.O)
+            reg_out = mux_select.ports.O
+        else:
+            reg_out = reg.ports.O
 
         for name, lo, hi in working_set:
             # need to create a slice
@@ -118,7 +178,7 @@ class Configurable(Generator):
             slice_wrapper.lo = lo
             slice_wrapper.hi = hi
             slice_wrapper.add_ports(I=magma.In(magma.Bits[reg_width]))
-            self.wire(reg.ports.O, slice_wrapper.ports.I)
+            self.wire(reg_out, slice_wrapper.ports.I)
             # create map
             self.__register_map[name] = (idx, lo, hi)
 
@@ -180,11 +240,30 @@ class Configurable(Generator):
                       self.ports.read_config_data)
 
             for idx, reg in enumerate(self.__registers):
-                zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
+                # we need to create a mux to select read config as well
+                if self.double_buffer:
+                    mux = MuxWrapper(2, reg.width, f"read_data_mux_db_{idx}")
+                    self.wire(mux.ports.S[0], self.ports.config_db)
+                    self.wire(mux.ports.I[0], reg.ports.O)
+                    reg_db = self.double_buffer_map[reg.instance_name]
+                    self.wire(mux.ports.I[1], reg_db.ports.O)
+                    reg_out = mux.ports.O
+                else:
+                    reg_out = reg.ports.O
+                zext_out = _zext(reg_out, reg.width, self.config_data_width)
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
         elif num_config_reg == 1:
             reg = self.__registers[0]
-            zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
+            if self.double_buffer:
+                mux = MuxWrapper(2, reg.width, f"read_data_mux_db")
+                self.wire(mux.ports.S[0], self.ports.config_db)
+                self.wire(mux.ports.I[0], reg.ports.O)
+                reg_db = self.double_buffer_map[reg.instance_name]
+                self.wire(mux.ports.I[1], reg_db.ports.O)
+                reg_out = mux.ports.O
+            else:
+                reg_out = reg.ports.O
+            zext_out = _zext(reg_out, reg.width, self.config_data_width)
             self.wire(zext_out, self.ports.read_config_data)
 
 
