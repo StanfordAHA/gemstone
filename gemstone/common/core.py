@@ -54,9 +54,11 @@ class Core(Generator):
 
 
 class ConfigurableCore(Core, Configurable):
-    def __init__(self, config_addr_width, config_data_width):
+    def __init__(self, config_addr_width, config_data_width,
+                 double_buffer=False):
         Core.__init__(self)
-        Configurable.__init__(self, config_addr_width, config_data_width)
+        Configurable.__init__(self, config_addr_width, config_data_width,
+                              double_buffer=double_buffer)
 
         # set to true will allow it skip reg compression on this feature
         # during the bitstream generation stage
