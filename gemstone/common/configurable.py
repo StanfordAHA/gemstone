@@ -136,24 +136,6 @@ class Configurable(Generator):
             self.wire(self.ports.config.config_addr, reg_db.ports.config_addr)
             self.wire(self.ports.config.config_data, reg_db.ports.config_data)
             self.wire(self.ports.reset, reg_db.ports.reset)
-
-            # the enable needs to be computed from the selection
-            # notice that things can be much easier if gemstone/magma allows generating statements
-            # directly like kratos. ideally we should not instantiate logic gates
-            # use a NOT gate
-            not_gate = FromMagma(mantle.DefineInvert(1))
-            not_gate.instance_name = f"not_config_db_{idx}"
-            self.wire(self.ports.config_db, not_gate.ports.I[0])
-            # use an AND gate
-            and_gate = FromMagma(mantle.DefineAnd(2))
-            self.wire(and_gate.ports.I0, not_gate.ports.O[0])
-            self.wire(and_gate.ports.I1, self.ports.config.write[0])
-            self.wire(and_gate.ports.O, reg.ports.config_en)
-            # use another AND gate
-            and_gate_db = FromMagma(mantle.DefineAnd(2))
-            self.wire(and_gate_db.ports.I0, self.ports.config_db)
-            self.wire(and_gate_db.ports.I1, self.ports.config.write[0])
-            self.wire(and_gate_db.ports.O, reg_db.ports.config_en)
         else:
             self.wire(self.ports.config.config_addr, reg.ports.config_addr)
             self.wire(self.ports.config.config_data, reg.ports.config_data)
@@ -219,6 +201,25 @@ class Configurable(Generator):
 
         if working_set:
             self.__create_register(working_set)
+
+        if self.double_buffer and self.__registers:
+            not_gate = FromMagma(mantle.DefineInvert(1))
+            and_gate = FromMagma(mantle.DefineAnd(2))
+            and_gate_db = FromMagma(mantle.DefineAnd(2))
+            # use a NOT gate
+            self.wire(self.ports.config_db, not_gate.ports.I[0])
+            # use an AND gate
+            self.wire(and_gate.ports.I0, not_gate.ports.O[0])
+            self.wire(and_gate.ports.I1, self.ports.config.write[0])
+            self.wire(and_gate_db.ports.I0, self.ports.config_db)
+            self.wire(and_gate_db.ports.I1, self.ports.config.write[0])
+
+            for reg in self.__registers:
+                reg_db = self.double_buffer_map[reg.instance_name]
+                # connect register config_en
+                self.wire(and_gate.ports.O, reg.ports.config_en)
+                # connect db register config_en
+                self.wire(and_gate_db.ports.O, reg_db.ports.config_en)
 
         def _zext(port, old_width, new_width):
             if old_width == new_width:
