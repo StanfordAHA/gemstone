@@ -42,7 +42,7 @@ def check_files_equal(file1_name, file2_name):
     return result
 
 
-def compress_config_data(config_data, skip_compression=None):
+def compress_config_data(config_data, skip_compression=None, skip_zero=True):
     # config is reg_addr, value format
     reg_map = {}
     skipped_condig_data = []
@@ -59,7 +59,8 @@ def compress_config_data(config_data, skip_compression=None):
         reg_map[addr] = reg_map[addr] | value
     result = []
     for addr, value in reg_map.items():
-        if value != 0:
-            result.append((addr, value))
+        if skip_zero and value == 0:
+            continue
+        result.append((addr, value))
     result = result + skipped_condig_data
     return result
