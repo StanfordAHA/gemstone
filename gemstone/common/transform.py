@@ -1,7 +1,6 @@
 from ..generator.from_magma import FromMagma
 from ..generator.generator import Generator, PortReference
 import magma
-import mantle
 from typing import List, Union, Iterable, Tuple
 from ordered_set import OrderedSet
 from collections import OrderedDict
@@ -43,7 +42,7 @@ def or_reduction(gen: Generator, sub_circuit_name: str, signal_name: str,
     sub_circuit = getattr(gen, sub_circuit_name)
     # Remove the current connection to the @signal_name output
     gen.remove_wire(sub_circuit.ports[sub_circuit_port_name], pass_through)
-    read_data_reduce_or = FromMagma(mantle.DefineOr(2, config_data_width))
+    read_data_reduce_or = FromMagma(magma.Bits[config_data_width]._declare_binary_op("or"))
     read_data_reduce_or.underlying.name = f"{signal_name}_or"
     # OR previous read_data output with @signal_name input to create NEW
     # @signal_name output

@@ -4,7 +4,6 @@ from ..generator.from_magma import FromMagma
 from ..generator.generator import Generator
 import magma
 from typing import List, Union
-import mantle
 
 
 class PnRTag:

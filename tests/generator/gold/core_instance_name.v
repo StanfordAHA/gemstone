@@ -90,7 +90,7 @@ coreir_mux #(
 assign out = _join_out;
 endmodule
 
-module Mux2xOutBits32 (
+module Mux2xBits32 (
     input [31:0] I0,
     input [31:0] I1,
     input S,
@@ -108,17 +108,17 @@ commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
 assign O = coreir_commonlib_mux2x32_inst0_out;
 endmodule
 
-module Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 (
+module Register (
     input [31:0] I,
     output [31:0] O,
-    input CLK,
     input CE,
+    input CLK,
     input ASYNCRESET
 );
 wire [31:0] enable_mux_O;
-wire [31:0] value_out;
-Mux2xOutBits32 enable_mux (
-    .I0(value_out),
+wire [31:0] reg_PR_inst0_out;
+Mux2xBits32 enable_mux (
+    .I0(reg_PR_inst0_out),
     .I1(I),
     .S(CE),
     .O(enable_mux_O)
@@ -128,31 +128,13 @@ coreir_reg_arst #(
     .clk_posedge(1'b1),
     .init(32'h00000000),
     .width(32)
-) value (
+) reg_PR_inst0 (
     .clk(CLK),
     .arst(ASYNCRESET),
     .in(enable_mux_O),
-    .out(value_out)
+    .out(reg_PR_inst0_out)
 );
-assign O = value_out;
-endmodule
-
-module Mux2x32 (
-    input [31:0] I0,
-    input [31:0] I1,
-    input S,
-    output [31:0] O
-);
-wire [31:0] coreir_commonlib_mux2x32_inst0_out;
-wire [31:0] coreir_commonlib_mux2x32_inst0_in_data [1:0];
-assign coreir_commonlib_mux2x32_inst0_in_data[1] = I1;
-assign coreir_commonlib_mux2x32_inst0_in_data[0] = I0;
-commonlib_muxn__N2__width32 coreir_commonlib_mux2x32_inst0 (
-    .in_data(coreir_commonlib_mux2x32_inst0_in_data),
-    .in_sel(S),
-    .out(coreir_commonlib_mux2x32_inst0_out)
-);
-assign O = coreir_commonlib_mux2x32_inst0_out;
+assign O = reg_PR_inst0_out;
 endmodule
 
 module MuxWrapper_2_32 (
@@ -160,14 +142,14 @@ module MuxWrapper_2_32 (
     output [31:0] O,
     input [0:0] S
 );
-wire [31:0] Mux2x32_inst0_O;
-Mux2x32 Mux2x32_inst0 (
+wire [31:0] Mux2xBits32_inst0_O;
+Mux2xBits32 Mux2xBits32_inst0 (
     .I0(I[0]),
     .I1(I[1]),
     .S(S[0]),
-    .O(Mux2x32_inst0_O)
+    .O(Mux2xBits32_inst0_O)
 );
-assign O = Mux2x32_inst0_O;
+assign O = Mux2xBits32_inst0_O;
 endmodule
 
 module ConfigRegister_32_8_32_1 (
@@ -178,15 +160,15 @@ module ConfigRegister_32_8_32_1 (
     input [31:0] config_data,
     input config_en
 );
-wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
+wire [31:0] Register_inst0_O;
 wire [7:0] const_1_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
-Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0 (
+Register Register_inst0 (
     .I(config_data),
-    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O),
-    .CLK(clk),
+    .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
+    .CLK(clk),
     .ASYNCRESET(reset)
 );
 coreir_const #(
@@ -207,7 +189,7 @@ coreir_eq #(
     .in1(const_1_8_out),
     .out(magma_Bits_8_eq_inst0_out)
 );
-assign O = Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
+assign O = Register_inst0_O;
 endmodule
 
 module ConfigRegister_32_8_32_0 (
@@ -218,15 +200,15 @@ module ConfigRegister_32_8_32_0 (
     input [31:0] config_data,
     input config_en
 );
-wire [31:0] Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
+wire [31:0] Register_inst0_O;
 wire [7:0] const_0_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
-Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32 Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0 (
+Register Register_inst0 (
     .I(config_data),
-    .O(Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O),
-    .CLK(clk),
+    .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
+    .CLK(clk),
     .ASYNCRESET(reset)
 );
 coreir_const #(
@@ -247,7 +229,7 @@ coreir_eq #(
     .in1(const_0_8_out),
     .out(magma_Bits_8_eq_inst0_out)
 );
-assign O = Register_has_ce_True_has_reset_False_has_async_reset_True_has_async_resetn_False_type_Bits_n_32_inst0_O;
+assign O = Register_inst0_O;
 endmodule
 
 module DummyCore (
