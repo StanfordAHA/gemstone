@@ -5,6 +5,18 @@ import fault
 import tempfile
 
 
+def _define_binop(op, width):
+    return magma.Bits[width]._declare_binary_op(op)
+
+
+def _define_add(width):
+    return _define_binop("add", width)
+
+
+def _define_mul(width):
+    return _define_binop("mul", width)
+
+
 class Child1(Generator):
     CONST = 1
 
@@ -16,7 +28,7 @@ class Child1(Generator):
             port1=magma.Out(magma.Bits[width]),
         )
 
-        add_ = FromMagma(mantle.DefineAdd(width))
+        add_ = FromMagma(_define_add(width))
         self.wire(self.ports["port0"], add_.ports.I0)
         self.wire(Const(self.CONST), add_.ports.I1)
         self.wire(self.ports["port1"], add_.ports.O)
@@ -36,7 +48,7 @@ class Child2(Generator):
             port1=magma.Out(magma.Bits[width]),
         )
 
-        add_ = FromMagma(mantle.DefineMul(width))
+        add_ = FromMagma(_define_mul(width))
         self.wire(self.ports["port0"], add_.ports.I0)
         self.wire(Const(self.CONST), add_.ports.I1)
         self.wire(self.ports["port1"], add_.ports.O)
@@ -56,7 +68,7 @@ class Child3(Generator):
             port1=magma.Out(magma.Bits[width + 1]),
         )
 
-        add_ = FromMagma(mantle.DefineAdd(width))
+        add_ = FromMagma(_define_add(width))
         self.wire(self.ports["port0"], add_.ports.I0)
         self.wire(Const(child_2_const), add_.ports.I1)
         self.wire(self.ports["port1"], add_.ports.O)
@@ -75,7 +87,7 @@ class Child4(Generator):
             port1=magma.Out(magma.Bits[width]),
         )
 
-        add_ = FromMagma(mantle.DefineMul(width))
+        add_ = FromMagma(_define_mul(width))
         self.wire(self.ports["port0"], add_.ports.I0)
         self.wire(self.ports["port2"], add_.ports.I1)
         self.wire(self.ports["port1"], add_.ports.O)

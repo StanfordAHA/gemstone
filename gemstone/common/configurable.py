@@ -1,5 +1,4 @@
 import magma
-import mantle
 from ..generator.generator import Generator
 from ..generator.from_magma import FromMagma
 from .collections import DotDict
@@ -27,9 +26,9 @@ def _generate_config_register(width, addr, addr_width,
             ports["config_en"] = magma.In(magma.Bit)
         io = magma.IO(**ports)
 
-        reg = mantle.Register(width,
-                              has_ce=True,
-                              has_async_reset=True)
+        reg = magma.Register(magma.Bits[width],
+                             has_enable=True,
+                             reset_type=magma.AsyncReset)()
         magma.wire(io.clk, reg.CLK)
         ce = (io.config_addr == magma.bits(addr, addr_width))
         magma.wire(io.reset, reg.ASYNCRESET)
@@ -203,9 +202,9 @@ class Configurable(Generator):
             self.__create_register(working_set)
 
         if self.double_buffer and self.__registers:
-            not_gate = FromMagma(mantle.DefineInvert(1))
-            and_gate = FromMagma(mantle.DefineAnd(2))
-            and_gate_db = FromMagma(mantle.DefineAnd(2))
+            not_gate = FromMagma(magma.Bit._declare_unary_op("not"))
+            and_gate = FromMagma(magma.Bit._declare_binary_op("and"))
+            and_gate_db = FromMagma(magma.Bit._declare_binary_op("and"))
             # use a NOT gate
             self.wire(self.ports.config_db, not_gate.ports.I[0])
             # use an AND gate

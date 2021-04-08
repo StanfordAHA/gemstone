@@ -1,5 +1,4 @@
 import magma
-import mantle
 from ..common.mux_wrapper import MuxWrapper
 from ..generator.generator import Generator
 from ..generator.const import Const
@@ -37,8 +36,8 @@ class MuxWithDefaultWrapper(Generator):
 
         self.data_mux = MuxWrapper(self.num_inputs, self.width)
         self.default_mux = MuxWrapper(2, self.width)
-        lt = mantle.DefineULT(self.sel_bits)
-        and_gate = mantle.DefineAnd(2)
+        lt = magma.Bits[self.sel_bits]._declare_compare_op("ult")
+        and_gate = magma.Bit._declare_binary_op("and")
         self.lt = FromMagma(lt)
         self.and_gate = FromMagma(and_gate)
 

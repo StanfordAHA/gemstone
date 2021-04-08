@@ -1,5 +1,4 @@
 import magma
-import mantle
 from ..generator.generator import Generator
 from ..generator.from_magma import FromMagma
 
@@ -25,7 +24,7 @@ def _generate_mux_wrapper(height, width):
         if height <= 1:
             magma.wire(io.I[0], io.O)
         else:
-            mux = mantle.DefineMux(height, width)()
+            mux = magma.Mux(height, magma.Bits[width])()
             for i in range(height):
                 magma.wire(io.I[i], mux.interface.ports[f"I{i}"])
             mux_in = io.S if sel_bits > 1 else io.S[0]
