@@ -7,6 +7,8 @@ from .mux_wrapper import MuxWrapper
 from .zext_wrapper import ZextWrapper
 from .slice_wrapper import SliceWrapper
 
+import magma as m
+
 
 @magma.cache_definition
 def _generate_config_register(width, addr, addr_width,
@@ -311,9 +313,23 @@ class ConfigRegister(Generator):
         self.data_width = data_width
         self.add_port("config_data", magma.In(magma.Bits[self.data_width]))
 
-    def circuit(self):
-        return _generate_config_register(self.width, self.addr, self.addr_width,
-                                         self.data_width, self.use_config_en)
+    # def circuit(self):
+    #     return _generate_config_register(self.width, self.addr, self.addr_width,
+    #                                      self.data_width, self.use_config_en)
+
+    @m.builder_method
+    def finalize(self):
+        reg = m.Register(m.Bits[self.width],
+                         has_enable=True,
+                         reset_type=m.AsyncReset)()
+        m.wire(self._builder._port("clk"), reg.CLK)
+        ce = (self._builder._port("config_addr") == m.bits(self.addr, self.addr_width))
+        m.wire(self._builder._port("reset"), reg.ASYNCRESET)
+        if self.use_config_en:
+            ce = ce & self._builder._port("config_en")
+        m.wire(self._builder._port("config_data")[0:self.width], reg.I)
+        m.wire(m.enable(ce), reg.CE)
+        m.wire(reg.O, self._builder._port("O"))
 
     def name(self):
         return f"ConfigRegister"\
