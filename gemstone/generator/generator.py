@@ -132,7 +132,7 @@ class Generator(ABC):
 
     def circuit(self):
         hash_ = self.__hash
-        hash_ ^= hash(self.name())
+        hash_ ^= hash(self.name()) << 16
         if hash_ in _generator_cache:
             return _generator_cache[hash_]
 
@@ -159,7 +159,7 @@ class Generator(ABC):
                 wire1 = port1.get_port(inst1)
                 magma.wire(wire0, wire1)
 
-        _generator_cache[self.__hash] = _Circ
+        _generator_cache[hash_] = _Circ
 
         return _Circ
 
