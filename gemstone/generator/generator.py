@@ -74,6 +74,19 @@ class Generator(ABC):
         for conn1, conn2 in wires_to_remove:
             self.remove_wire(conn1, conn2)
 
+    def disconnect(self, port_ref):
+        # disconnect all wires associated with this port in the generator
+        if isinstance(port_ref, str):
+            port_ref = self.ports[port_ref]
+        wires_to_remove = set()
+        for conn1, conn2 in self.wires:
+            if conn1 == port_ref:
+                wires_to_remove.add((conn1, conn2))
+            elif conn2 == port_ref:
+                wires_to_remove.add((conn1, conn2))
+        for conn1, conn2 in wires_to_remove:
+            self.remove_wire(conn1, conn2)
+
     def add_ports(self, **kwargs):
         for name, T in kwargs.items():
             self.add_port(name, T)
