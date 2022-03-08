@@ -1,15 +1,22 @@
+module mantle_wire__typeBit8 (
+    input [7:0] in,
+    output [7:0] out
+);
+assign out = in;
+endmodule
+
 module dummy_2 (
     input [31:0] I,
     output [31:0] O
 );
-assign O = I;
+assign O = I[31:0];
 endmodule
 
 module dummy_1 (
     input [31:0] I,
     output [31:0] O
 );
-assign O = I;
+assign O = I[31:0];
 endmodule
 
 module coreir_reg_arst #(
@@ -116,9 +123,9 @@ module Register (
     input ASYNCRESET
 );
 wire [31:0] enable_mux_O;
-wire [31:0] reg_PR_inst0_out;
+wire [31:0] reg_PR32_inst0_out;
 Mux2xBits32 enable_mux (
-    .I0(reg_PR_inst0_out),
+    .I0(reg_PR32_inst0_out),
     .I1(I),
     .S(CE),
     .O(enable_mux_O)
@@ -128,13 +135,13 @@ coreir_reg_arst #(
     .clk_posedge(1'b1),
     .init(32'h00000000),
     .width(32)
-) reg_PR_inst0 (
+) reg_PR32_inst0 (
     .clk(CLK),
     .arst(ASYNCRESET),
     .in(enable_mux_O),
-    .out(reg_PR_inst0_out)
+    .out(reg_PR32_inst0_out)
 );
-assign O = reg_PR_inst0_out;
+assign O = reg_PR32_inst0_out;
 endmodule
 
 module MuxWrapper_2_32 (
@@ -165,7 +172,7 @@ wire [7:0] const_1_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register Register_inst0 (
-    .I(config_data),
+    .I(config_data[31:0]),
     .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
     .CLK(clk),
@@ -205,7 +212,7 @@ wire [7:0] const_0_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register Register_inst0 (
-    .I(config_data),
+    .I(config_data[31:0]),
     .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
     .CLK(clk),
@@ -250,13 +257,14 @@ wire [31:0] config_reg_0_O;
 wire [31:0] config_reg_1_O;
 wire [31:0] dummy_1_inst0_O;
 wire [31:0] dummy_2_inst0_O;
+wire [7:0] self_config_config_addr_out;
 wire [31:0] MuxWrapper_2_32_inst0_I [1:0];
 assign MuxWrapper_2_32_inst0_I[1] = config_reg_1_O;
 assign MuxWrapper_2_32_inst0_I[0] = config_reg_0_O;
 MuxWrapper_2_32 MuxWrapper_2_32_inst0 (
     .I(MuxWrapper_2_32_inst0_I),
     .O(MuxWrapper_2_32_inst0_O),
-    .S(config_config_addr[0])
+    .S(self_config_config_addr_out[0:0])
 );
 ConfigRegister_32_8_32_0 config_reg_0 (
     .clk(clk),
@@ -281,6 +289,10 @@ dummy_1 dummy_1_inst0 (
 dummy_2 dummy_2_inst0 (
     .I(config_reg_1_O),
     .O(dummy_2_inst0_O)
+);
+mantle_wire__typeBit8 self_config_config_addr (
+    .in(config_config_addr),
+    .out(self_config_config_addr_out)
 );
 assign data_out_16b = data_in_16b;
 assign data_out_1b = data_in_1b;
