@@ -8,8 +8,8 @@ import magma
 from gemstone.common.mux_with_default import MuxWithDefaultWrapper
 
 
-test_cases = [(randint(2, 10), randint(1, 32), randint(4, 32),
-               randint(0, 100)) for _ in range(5)]
+test_cases = [(randint(6, 10), randint(1, 32), randint(4, 32),
+               randint(0, 64)) for _ in range(5)]
 test_cases += [(10, 16, 3, 0)]
 
 
