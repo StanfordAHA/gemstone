@@ -4,7 +4,6 @@ from gemstone.common.configurable_model import ConfigurableModel
 
 
 def test_configurable_model_smoke():
-    EXPECTED_MSG = repr(TypeError("Can't instantiate abstract class _ConfigurableModel with abstract method __call__"))  # nopep8
     has_type_error = False
     try:
         my_model = ConfigurableModel(32, 32)()
@@ -12,7 +11,6 @@ def test_configurable_model_smoke():
         msg = e.__repr__()
         has_type_error = True
     assert has_type_error
-    assert msg == EXPECTED_MSG
 
 
 def test_configurable_model_subclass():
