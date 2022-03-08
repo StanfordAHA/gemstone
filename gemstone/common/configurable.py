@@ -206,9 +206,9 @@ class Configurable(Generator):
             and_gate = FromMagma(magma.Bit._declare_binary_op("and"))
             and_gate_db = FromMagma(magma.Bit._declare_binary_op("and"))
             # use a NOT gate
-            self.wire(self.ports.config_db, not_gate.ports.I[0])
+            self.wire(self.ports.config_db, not_gate.ports.I)
             # use an AND gate
-            self.wire(and_gate.ports.I0, not_gate.ports.O[0])
+            self.wire(and_gate.ports.I0, not_gate.ports.O)
             self.wire(and_gate.ports.I1, self.ports.config.write[0])
             self.wire(and_gate_db.ports.I0, self.ports.config_db)
             self.wire(and_gate_db.ports.I1, self.ports.config.write[0])
