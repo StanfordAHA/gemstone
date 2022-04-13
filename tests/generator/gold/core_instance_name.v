@@ -266,19 +266,23 @@ MuxWrapper_2_32 MuxWrapper_2_32_inst0 (
     .O(MuxWrapper_2_32_inst0_O),
     .S(self_config_config_addr_out[0:0])
 );
+wire [7:0] config_reg_0_config_addr;
+assign config_reg_0_config_addr = {self_config_config_addr_out[7],self_config_config_addr_out[6],self_config_config_addr_out[5],self_config_config_addr_out[4],self_config_config_addr_out[3],self_config_config_addr_out[2],self_config_config_addr_out[1],self_config_config_addr_out[0:0]};
 ConfigRegister_32_8_32_0 config_reg_0 (
     .clk(clk),
     .reset(reset),
     .O(config_reg_0_O),
-    .config_addr(config_config_addr),
+    .config_addr(config_reg_0_config_addr),
     .config_data(config_config_data),
     .config_en(config_write[0])
 );
+wire [7:0] config_reg_1_config_addr;
+assign config_reg_1_config_addr = {self_config_config_addr_out[7],self_config_config_addr_out[6],self_config_config_addr_out[5],self_config_config_addr_out[4],self_config_config_addr_out[3],self_config_config_addr_out[2],self_config_config_addr_out[1],self_config_config_addr_out[0:0]};
 ConfigRegister_32_8_32_1 config_reg_1 (
     .clk(clk),
     .reset(reset),
     .O(config_reg_1_O),
-    .config_addr(config_config_addr),
+    .config_addr(config_reg_1_config_addr),
     .config_data(config_config_data),
     .config_en(config_write[0])
 );
