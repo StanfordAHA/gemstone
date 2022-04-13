@@ -9,14 +9,14 @@ module dummy_2 (
     input [31:0] I,
     output [31:0] O
 );
-assign O = I[31:0];
+assign O = I;
 endmodule
 
 module dummy_1 (
     input [31:0] I,
     output [31:0] O
 );
-assign O = I[31:0];
+assign O = I;
 endmodule
 
 module coreir_reg_arst #(
@@ -172,7 +172,7 @@ wire [7:0] const_1_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register Register_inst0 (
-    .I(config_data[31:0]),
+    .I(config_data),
     .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
     .CLK(clk),
@@ -212,7 +212,7 @@ wire [7:0] const_0_8_out;
 wire magma_Bit_and_inst0_out;
 wire magma_Bits_8_eq_inst0_out;
 Register Register_inst0 (
-    .I(config_data[31:0]),
+    .I(config_data),
     .O(Register_inst0_O),
     .CE(magma_Bit_and_inst0_out),
     .CLK(clk),
