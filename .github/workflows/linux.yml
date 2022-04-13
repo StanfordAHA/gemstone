@@ -26,7 +26,7 @@ jobs:
       run: |
         docker exec -i gemstone bash -c "pip install -e /gemstone"
         docker exec -i gemstone bash -c "pip install pytest==5.4.3 python-coveralls"
-        docker exec -i gemstone bash -c "pip install pytest-cov pytest-pycodestyle"
+        docker exec -i gemstone bash -c "pip install pytest-cov pytest-pycodestyle pycodestyle"
     - name: Run tests ⚙️
       shell: bash
       run: |
