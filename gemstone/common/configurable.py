@@ -266,6 +266,9 @@ class Configurable(Generator):
             zext_out = _zext(reg_out, reg.width, self.config_data_width)
             self.wire(zext_out, self.ports.read_config_data)
 
+    def finalize(self):
+        self._setup_config()
+
 
 class ConfigRegister(Generator):
     def __init__(self, width, use_config_en=False, name=None):
