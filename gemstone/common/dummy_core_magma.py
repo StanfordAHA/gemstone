@@ -26,6 +26,7 @@ class DummyCore(ConfigurableCore):
             dummy_2=32
         )
 
+    def finalize(self):
         self._setup_config()
 
     def get_config_bitstream(self, instr):
