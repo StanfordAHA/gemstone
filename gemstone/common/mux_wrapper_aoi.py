@@ -43,10 +43,10 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
         if ready_valid:
             # add ready valid ports
             bits = magma.Bits[in_height]
-            ports["ready_in"] = magma.In(magma.Bits[1])
-            ports["ready_out"] = magma.Out(bits)
+            ports["ready_in"] = magma.In(magma.Bit)
+            ports["ready_out"] = magma.Out(magma.Bit)
             ports["valid_in"] = magma.In(bits)
-            ports["valid_out"] = magma.Out(magma.Bits[1])
+            ports["valid_out"] = magma.Out(magma.Bit)
 
         if height > 1:
             ports["S"] = magma.In(magma.Bits[sel_bits])
@@ -74,7 +74,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 verilog_str += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
             if ready_valid:
                 verilog_str += f'\tinput logic ready_in,\n'
-                verilog_str += f'\toutput logic [{height-1}:0] ready_out,\n'
+                verilog_str += f'\toutput logic ready_out,\n'
                 verilog_str += f'\tinput logic [{height-1}:0]  valid_in,\n'
                 verilog_str += f'\toutput logic valid_out,\n'
             verilog_str += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel,\n'
@@ -109,7 +109,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             if ready_valid:
                 # valid is select (AND reduction) and read is fan-out
                 verilog_str += f'assign valid_out = |({num_inputs}\'(valid_in) & out_sel);\n'
-                verilog_str += f'assign ready_out = {{{height}{{ready_in}}}};\n'
+                verilog_str += f'assign ready_out = ready_in;\n'
 
             verilog_str += f'\nendmodule \n'
 
@@ -210,11 +210,16 @@ class AOIMuxWrapper(Generator):
         if mux_type == AOIMuxType.RegularReadyValid or mux_type == AOIMuxType.ConstReadyValid:
             bits = magma.Bits[self.height]
             self.add_ports(
-                ready_in=magma.In(magma.Bits[1]),
+                ready_in=magma.In(magma.Bit),
                 ready_out= magma.Out(bits),
                 valid_in= magma.In(bits),
-                valid_out= magma.Out(magma.Bits[1])
+                valid_out= magma.Out(magma.Bit)
             )
+
+            if self.height > 1:
+                num_inputs = int(math.pow(2, magma.bitutils.clog2(height)))
+                self.add_port("out_sel", magma.Out(magma.Bits[num_inputs]))
+
 
     def circuit(self):
         return _generate_mux_wrapper(self.height, self.width, self.mux_type)
