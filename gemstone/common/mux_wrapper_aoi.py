@@ -39,7 +39,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             "I": magma.In(magma.Array[in_height, T]),
             "O": magma.Out(T),
         }
-        ready_valid = mux_type.RegularReadyValid or mux_type == mux_type.ConstReadyValid
+        ready_valid = mux_type == mux_type.RegularReadyValid or mux_type == mux_type.ConstReadyValid
         if ready_valid:
             # add ready valid ports
             bits = magma.Bits[in_height]
