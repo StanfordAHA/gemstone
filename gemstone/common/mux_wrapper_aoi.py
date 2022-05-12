@@ -67,7 +67,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             # ======= MUX MODULE =========
 
             verilog_str += f"module {name} ( \n"
-            verilog_str += f'\tinput logic  [{width-1} : 0] I[{height}], \n'
+            verilog_str += f'\tinput logic  [{width-1} : 0] I[{height-1}:0], \n'
             if num_sel == 1:
                 verilog_str += f'input logic S, \n'
             else:
