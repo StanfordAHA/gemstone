@@ -54,6 +54,7 @@ class Generator(ABC):
         self.ports[name] = port_ref
         if not self.__skip_hash:
             self.__hash ^= hash(port_ref)
+        return port_ref
 
     def remove_port(self, port_name: str):
         # first remove it from self.ports
