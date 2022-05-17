@@ -60,7 +60,7 @@ def compress_config_data(config_data, skip_compression=None, skip_zero=True):
         reg_map[addr] = reg_map[addr] | value
 
     for cfg in config_data:
-        if isinstance(cfg[0], tuple):
+        if isinstance(cfg, list):
             for entry in cfg:
                 add_config_data(entry)
         else:
