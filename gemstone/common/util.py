@@ -49,14 +49,24 @@ def compress_config_data(config_data, skip_compression=None, skip_zero=True):
     if skip_compression is None:
         skip_compression = set()
 
-    for addr, value in config_data:
+    def add_config_data(entry):
+        addr, value = entry
         if addr in skip_compression:
             skipped_condig_data.append((addr, value))
-            continue
+            return
         if addr not in reg_map:
             reg_map[addr] = 0
         # we assume it's already shifted, by get_config_data method etc
         reg_map[addr] = reg_map[addr] | value
+
+    for cfg in config_data:
+        if isinstance(cfg, list):
+            for entry in cfg:
+                add_config_data(entry)
+        else:
+            add_config_data(cfg)
+
+
     result = []
     for addr, value in reg_map.items():
         if skip_zero and value == 0:
