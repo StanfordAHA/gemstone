@@ -1,5 +1,5 @@
 import magma
-from ..common.mux_wrapper import MuxWrapper
+from ..common.mux_wrapper_aoi import AOIMuxWrapper
 from ..generator.generator import Generator
 from ..generator.const import Const
 from ..generator.from_magma import FromMagma
@@ -34,8 +34,8 @@ class MuxWithDefaultWrapper(Generator):
                              f"(sel_bits={self.sel_bits}, "
                              f"num_inputs={self.num_inputs})")
 
-        self.data_mux = MuxWrapper(self.num_inputs, self.width)
-        self.default_mux = MuxWrapper(2, self.width)
+        self.data_mux = AOIMuxWrapper(self.num_inputs, self.width)
+        self.default_mux = AOIMuxWrapper(2, self.width)
         lt = magma.Bits[self.sel_bits]._declare_compare_op("ult")
         and_gate = magma.Bit._declare_binary_op("and")
         self.lt = FromMagma(lt)

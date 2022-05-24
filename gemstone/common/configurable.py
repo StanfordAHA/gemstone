@@ -3,7 +3,7 @@ from ..generator.generator import Generator
 from ..generator.from_magma import FromMagma
 from .collections import DotDict
 from ..generator.port_reference import PortReferenceBase
-from .mux_wrapper import MuxWrapper
+from .mux_wrapper_aoi import AOIMuxWrapper
 from .zext_wrapper import ZextWrapper
 from .slice_wrapper import SliceWrapper
 
@@ -61,7 +61,7 @@ class Configurable(Generator):
         self.config_addr_width = config_addr_width
         self.config_data_width = config_data_width
 
-        self.read_config_data_mux: MuxWrapper = None
+        self.read_config_data_mux: AOIMuxWrapper = None
 
         self.double_buffer = double_buffer
         self.double_buffer_map = {}
@@ -143,7 +143,8 @@ class Configurable(Generator):
 
         if self.double_buffer:
             # create a 2-1 MUX, could have been an one-liner in SV
-            mux_select = MuxWrapper(2, reg_width, f"{reg.instance_name}_db_sel_{idx}")
+            mux_select = AOIMuxWrapper(2, reg_width,
+                                       name=f"{reg.instance_name}_db_sel_{idx}")
             self.wire(mux_select.ports.S[0], self.ports.use_db)
             # set it up in such way that if use_db is 0 (default), we will use the normal reg
             self.wire(mux_select.ports.I[0], reg.ports.O)
@@ -230,8 +231,8 @@ class Configurable(Generator):
         # read_config_data output.
         num_config_reg = len(self.__registers)
         if num_config_reg > 1:
-            self.read_config_data_mux = MuxWrapper(num_config_reg,
-                                                   self.config_data_width)
+            self.read_config_data_mux = AOIMuxWrapper(num_config_reg,
+                                                      self.config_data_width)
             sel_bits = self.read_config_data_mux.sel_bits
             # Wire up config_addr to select input of read_data MUX.
             self.wire(self.ports.config.config_addr[:sel_bits],
@@ -242,7 +243,7 @@ class Configurable(Generator):
             for idx, reg in enumerate(self.__registers):
                 # we need to create a mux to select read config as well
                 if self.double_buffer:
-                    mux = MuxWrapper(2, reg.width, f"read_data_mux_db_{idx}")
+                    mux = AOIMuxWrapper(2, reg.width, name=f"read_data_mux_db_{idx}")
                     self.wire(mux.ports.S[0], self.ports.config_db)
                     self.wire(mux.ports.I[0], reg.ports.O)
                     reg_db = self.double_buffer_map[reg.instance_name]
@@ -255,7 +256,7 @@ class Configurable(Generator):
         elif num_config_reg == 1:
             reg = self.__registers[0]
             if self.double_buffer:
-                mux = MuxWrapper(2, reg.width, f"read_data_mux_db")
+                mux = AOIMuxWrapper(2, reg.width, name=f"read_data_mux_db")
                 self.wire(mux.ports.S[0], self.ports.config_db)
                 self.wire(mux.ports.I[0], reg.ports.O)
                 reg_db = self.double_buffer_map[reg.instance_name]

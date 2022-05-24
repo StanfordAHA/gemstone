@@ -177,7 +177,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
 
 
 class AOIMuxWrapper(Generator):
-    def __init__(self, height, width, mux_type, name=None):
+    def __init__(self, height, width, mux_type: AOIMuxType = AOIMuxType.Regular, name=None):
         super().__init__(name)
 
         self.height = height

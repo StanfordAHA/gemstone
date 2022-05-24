@@ -5,7 +5,9 @@ from hwtypes import BitVector
 import fault
 import fault.random
 import magma
+import shutil
 from gemstone.common.mux_with_default import MuxWithDefaultWrapper
+from gemstone.common.mux_wrapper_aoi import AOIMuxWrapper
 
 
 test_cases = [(randint(2, 10), randint(6, 32), randint(4, 32),
@@ -56,6 +58,8 @@ def test_mux_with_default_wrapper(num_inputs, width, sel_bits, default):
         tester.eval()
         tester.expect(mux_circuit.O, default)
     with tempfile.TemporaryDirectory() as tempdir:
+        for f in AOIMuxWrapper.get_sv_files():
+            shutil.copy(f, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
