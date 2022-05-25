@@ -180,7 +180,7 @@ class AOIMuxWrapper(Generator):
     def __init__(self, height, width, mux_type: AOIMuxType = AOIMuxType.Regular, name=None):
         super().__init__(name)
 
-        self.height = height
+        self.height = max(1, height)
         self.width = width
         self.mux_type: AOIMuxType = mux_type
 
