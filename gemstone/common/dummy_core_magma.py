@@ -91,7 +91,7 @@ class ReadyValidCore(ConfigurableCore):
     def eval_model(self, **kargs):
         pass
 
-    def combinationa_ports(self):
+    def combinational_ports(self):
         return [self.ports.data_in_16b_comb]
 
     def name(self):

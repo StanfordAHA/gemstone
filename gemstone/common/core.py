@@ -51,7 +51,7 @@ class Core(Generator):
     def eval_model(self, **kargs):
         return {}
 
-    def combinationa_ports(self):
+    def combinational_ports(self):
         return set()
 
 
