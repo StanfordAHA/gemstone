@@ -64,7 +64,8 @@ class ReadyValidCore(ConfigurableCore):
             data_in_16b_ready=bit_out,
             data_in_16b_valid=bit_in,
             data_out_16b_ready=bit_in,
-            data_out_16b_valid=bit_out
+            data_out_16b_valid=bit_out,
+            data_in_16b_comb=magma.In(magma.Bits[16])
         )
 
         self.remove_port("read_config_data")
@@ -82,13 +83,16 @@ class ReadyValidCore(ConfigurableCore):
         raise NotImplementedError()
 
     def inputs(self):
-        return [self.ports.data_in_16b]
+        return [self.ports.data_in_16b, self.ports.data_in_16b_comb]
 
     def outputs(self):
         return [self.ports.data_out_16b]
 
     def eval_model(self, **kargs):
         pass
+
+    def combinationa_ports(self):
+        return [self.ports.data_in_16b_comb]
 
     def name(self):
         return "ReadyValidCore"
