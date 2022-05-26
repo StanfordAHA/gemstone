@@ -51,6 +51,9 @@ class Core(Generator):
     def eval_model(self, **kargs):
         return {}
 
+    def combinationa_ports(self):
+        return set()
+
 
 class ConfigurableCore(Core, Configurable):
     def __init__(self, config_addr_width, config_data_width,
