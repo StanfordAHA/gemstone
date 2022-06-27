@@ -1,7 +1,3 @@
-import tempfile
-import glob
-import shutil
-import os
 import pytest
 from random import randint, choice
 import tempfile
@@ -39,8 +35,6 @@ def test_aoi_mux_wrapper(height, width):
         tester.expect(mux_circuit.O, inputs[i])
 
     with tempfile.TemporaryDirectory() as tempdir:
-        for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
-            shutil.copy(aoi_mux, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
@@ -78,8 +72,6 @@ def test_aoi_const_mux_wrapper(height, width):
             tester.expect(mux_circuit.O, 0)
 
     with tempfile.TemporaryDirectory() as tempdir:
-        for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
-            shutil.copy(aoi_mux, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal"])
