@@ -84,6 +84,7 @@ class Configurable(Generator):
     def add_config(self, name, width, pass_through=False):
         if name in self.registers:
             raise ValueError(f"{name} is already a register")
+
         if not pass_through:
             self.__register_cache[name] = width
             # ideally we should create the slice wrapper here. since at
@@ -93,14 +94,13 @@ class Configurable(Generator):
             # 1. we create a full sized slice wrapper
             # 2. remove the input port
             # 3. later on when we actually create the registers, resize the input
-            slice_wrapper = SliceWrapper(self.config_data_width, 0, width,
-                                         name=name)
+            slice_wrapper = SliceWrapper(self.config_data_width, 0, width)
             slice_wrapper.ports.pop("I")
         else:
-            slice_wrapper = SliceWrapper(width, 0, width,
-                                         name=name)
+            slice_wrapper = SliceWrapper(width, 0, width)
             self.__pass_through_configs.append(slice_wrapper)
 
+        slice_wrapper.instance_name = name + "_value"
         self.registers[name] = slice_wrapper
 
     def add_configs(self, **kwargs):
