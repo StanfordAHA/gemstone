@@ -56,6 +56,7 @@ class Configurable(Generator):
         self.__registers = []
         self.__register_cache = {}
         self.__register_map = {}
+        self.__pass_through_configs = []
         self.registers = DotDict()
 
         self.config_addr_width = config_addr_width
@@ -80,20 +81,26 @@ class Configurable(Generator):
                 use_db=magma.In(magma.Bit)
             )
 
-    def add_config(self, name, width):
+    def add_config(self, name, width, pass_through=False):
         if name in self.registers:
             raise ValueError(f"{name} is already a register")
-        self.__register_cache[name] = width
-        # ideally we should create create the slice wrapper here. since at
-        # this point we don't know the exact size, we need to able to resize
-        # the port later. however, the framework is not set up to do runtime
-        # changes on port width, so we need to be creative here
-        # 1. we create a full sized slice wrapper
-        # 2. remove the input port
-        # 3. later on when we actually create the registers, resize the input
-        slice_wrapper = SliceWrapper(self.config_data_width, 0, width,
-                                     name=name)
-        slice_wrapper.ports.pop("I")
+        if not pass_through:
+            self.__register_cache[name] = width
+            # ideally we should create the slice wrapper here. since at
+            # this point we don't know the exact size, we need to be able to resize
+            # the port later. however, the framework is not set up to do runtime
+            # changes on port width, so we need to be creative here
+            # 1. we create a full sized slice wrapper
+            # 2. remove the input port
+            # 3. later on when we actually create the registers, resize the input
+            slice_wrapper = SliceWrapper(self.config_data_width, 0, width,
+                                         name=name)
+            slice_wrapper.ports.pop("I")
+        else:
+            slice_wrapper = SliceWrapper(width, 0, width,
+                                         name=name)
+            self.__pass_through_configs.append(slice_wrapper)
+
         self.registers[name] = slice_wrapper
 
     def add_configs(self, **kwargs):
@@ -187,7 +194,7 @@ class Configurable(Generator):
         config_names.sort()
         for config_name in config_names:
             reg_width = self.__register_cache[config_name]
-            # try fit into the word boundrary
+            # try fit into the word boundary
             if reg_width + reg_addr_offset > self.config_data_width:
                 # we need to create a register based on the working set
                 # create the reg
@@ -229,7 +236,7 @@ class Configurable(Generator):
             return zext.ports.O
 
         # read_config_data output.
-        num_config_reg = len(self.__registers)
+        num_config_reg = len(self.__registers) + len(self.__pass_through_configs)
         if num_config_reg > 1:
             self.read_config_data_mux = AOIMuxWrapper(num_config_reg,
                                                       self.config_data_width)
@@ -252,6 +259,13 @@ class Configurable(Generator):
                 else:
                     reg_out = reg.ports.O
                 zext_out = _zext(reg_out, reg.width, self.config_data_width)
+                self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
+
+            # adding pass through as well
+            for idx, reg in enumerate(self.__pass_through_configs):
+                zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
+                # only append after the normal registers
+                idx = idx + len(self.__registers)
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
         elif num_config_reg == 1:
             reg = self.__registers[0]
