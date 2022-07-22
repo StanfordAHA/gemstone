@@ -4,6 +4,7 @@ import magma
 from typing import List, Union, Iterable, Tuple
 from ordered_set import OrderedSet
 from collections import OrderedDict
+from mantle import DefineRegister
 
 
 def pass_signal_through(gen: Generator, signal):
