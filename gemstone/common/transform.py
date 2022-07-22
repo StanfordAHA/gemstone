@@ -96,3 +96,19 @@ def replace(parent: Generator, old_gen: Generator, new_gen: Generator):
         # slices
         new_port = current_port.get_port(new_gen.ports)
         parent.wire(new_port, next_port)
+
+
+def pipeline_wire(gen: Generator, port0, port1):
+    """
+    Connects port0 to port 1 with a pipeline register in between.
+    If port0 and port1 are already connected, this will remove
+    that wire, and replace it with a pipelined connection.
+    """
+    gen.remove_wire(port0, port1)
+    width = len(port0.base_type())
+    pipe_reg = FromMagma(DefineRegister(width))
+    gen.wire(port0, pipe_reg.ports.I)
+    gen.wire(pipe_reg.ports.O, port1)
+
+
+
