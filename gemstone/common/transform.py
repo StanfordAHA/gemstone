@@ -105,7 +105,7 @@ def pipeline_wire(gen: Generator, in_port, *out_ports):
     If port0 and an out_port are already connected, this will remove
     that wire, and replace it with a pipelined connection.
     """
-    width = len(in_port.base_type())
+    width = len(in_port.type())
     pipe_reg = FromMagma(DefineRegister(width))
     gen.wire(in_port, pipe_reg.ports.I)
     for out_port in out_ports:
