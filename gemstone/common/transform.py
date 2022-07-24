@@ -108,7 +108,7 @@ def pipeline_wire(gen: Generator, in_port, *out_ports, **kwargs):
     width = len(in_port.type())
     pipe_reg = FromMagma(DefineRegister(width))
     gen.wire(in_port, pipe_reg.ports.I)
-    gen.wire(kwargs['clk'], pipe_reg.ports.clk)
+    gen.wire(kwargs['clk'], pipe_reg.ports.CLK)
     for out_port in out_ports:
         gen.remove_wire(in_port, out_port)
         gen.wire(pipe_reg.ports.O, out_port)
