@@ -30,7 +30,7 @@ class PipelineRegister(Generator):
 
         self.add_ports(
             clk=magma.In(magma.Clock),
-            O=magma.In(T),
+            I=magma.In(T),
             O=magma.Out(T),
         )
 
