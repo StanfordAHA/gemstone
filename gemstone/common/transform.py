@@ -4,6 +4,7 @@ import magma
 from typing import List, Union, Iterable, Tuple
 from ordered_set import OrderedSet
 from collections import OrderedDict
+from .pipeline_register import PipelineRegister
 
 
 def pass_signal_through(gen: Generator, signal):
@@ -104,9 +105,9 @@ def pipeline_wire(gen: Generator, in_port, *out_ports, **kwargs):
     If port0 and an out_port are already connected, this will remove
     that wire, and replace it with a pipelined connection.
     """
-    pipe_reg = FromMagma(magma.Register(in_port.type())())
+    pipe_reg = PipelineRegister(in_port.type())
     gen.wire(in_port, pipe_reg.ports.I)
-    gen.wire(kwargs['clk'], pipe_reg.ports.CLK)
+    gen.wire(kwargs['clk'], pipe_reg.ports.clk)
     for out_port in out_ports:
         gen.remove_wire(in_port, out_port)
         gen.wire(pipe_reg.ports.O, out_port)
