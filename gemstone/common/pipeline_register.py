@@ -35,7 +35,7 @@ class PipelineRegister(Generator):
         )
 
     def circuit(self):
-        return _generate_pipeline_register(T)
+        return _generate_pipeline_register(self.T)
 
     def name(self):
         return f"PipelineRegister"
