@@ -26,12 +26,12 @@ class PipelineRegister(Generator):
     def __init__(self, T, name=None):
         super().__init__(name)
 
-        self.T = T
+        self.T = T.undirected_t
 
         self.add_ports(
             clk=magma.In(magma.Clock),
-            I=magma.In(T),
-            O=magma.Out(T),
+            I=magma.In(self.T),
+            O=magma.Out(self.T),
         )
 
     def circuit(self):
