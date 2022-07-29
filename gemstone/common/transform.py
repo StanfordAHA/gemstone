@@ -4,6 +4,7 @@ import magma
 from typing import List, Union, Iterable, Tuple
 from ordered_set import OrderedSet
 from collections import OrderedDict
+from .pipeline_register import PipelineRegister
 
 
 def pass_signal_through(gen: Generator, signal):
@@ -96,3 +97,20 @@ def replace(parent: Generator, old_gen: Generator, new_gen: Generator):
         # slices
         new_port = current_port.get_port(new_gen.ports)
         parent.wire(new_port, next_port)
+
+
+def pipeline_wire(gen: Generator, in_port, *out_ports, **kwargs):
+    """
+    Connects in_port to all out_ports with a single pipeline register in between.
+    If port0 and an out_port are already connected, this will remove
+    that wire, and replace it with a pipelined connection.
+    """
+    pipe_reg = PipelineRegister(in_port.type())
+    gen.wire(in_port, pipe_reg.ports.I)
+    gen.wire(kwargs['clk'], pipe_reg.ports.clk)
+    for out_port in out_ports:
+        gen.remove_wire(in_port, out_port)
+        gen.wire(pipe_reg.ports.O, out_port)
+
+
+
