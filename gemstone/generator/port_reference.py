@@ -17,7 +17,12 @@ class GetItem(Op):
         self.index = index
 
     def __call__(self, obj):
-        return type(obj).__getitem__(obj, self.index)
+        try:
+            return type(obj).__getitem__(obj, self.index)
+        except TypeError:
+            # this is due to magma's Bits[1] vs Bit
+            assert self.index == 0
+            return obj
 
     def transform_name(self, name):
         return name
