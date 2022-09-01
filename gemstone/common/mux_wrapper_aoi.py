@@ -26,7 +26,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
         in_height = max(1, height)
         verilog_str = ""
 
-        if mux_type == mux_type.Const or mux_type.ConstReadyValid:
+        if mux_type == mux_type.Const or mux_type == mux_type.ConstReadyValid:
             # 1-bit extra for the constant
             num_sel = math.ceil(math.log(height + 1, 2))
             num_ops = math.ceil((height + 1) / 2)
