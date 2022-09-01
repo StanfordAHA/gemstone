@@ -26,7 +26,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
         in_height = max(1, height)
         verilog_str = ""
 
-        if mux_type == mux_type.Const:
+        if mux_type == mux_type.Const or mux_type.ConstReadyValid:
             # 1-bit extra for the constant
             num_sel = math.ceil(math.log(height + 1, 2))
             num_ops = math.ceil((height + 1) / 2)
@@ -83,6 +83,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             # Intermediate Signals
             for i in range(num_ops):
                 verilog_str += f'\tlogic  [{int(width)-1} : 0] O_int{i};\n'
+            if ready_valid:
+                verilog_str += f'\tlogic [{num_ops - 1}:0] valid_out_temp;\n'
 
             # PRECODER INSTANTIATION #
             verilog_str += f'\nprecoder_{width}_{height} u_precoder ( \n'
@@ -93,7 +95,9 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog_str += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
             for i in range(height):
                 verilog_str += f'\t.I{i} (I[{i}]),\n'
-            verilog_str += f'\t.out_sel(out_sel), \n'
+            verilog_str += f'\t.out_sel(out_sel),'
+            if ready_valid:
+                verilog_str += f'\n\t.valid_in(valid_in),\n\t.valid_out(valid_out_temp),\n'
             for i in range(num_ops - 1):
                 verilog_str += f'\t.O{i}(O_int{i}), \n'
             verilog_str += f'\t.O{num_ops-1}(O_int{num_ops-1})); \n'
@@ -105,11 +109,9 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog_str += f'\tO_int{num_ops-1} '
             verilog_str += f'\t); \n'
 
-            # compute ready valid signals
             if ready_valid:
-                # valid is select (AND reduction) and read is fan-out
-                verilog_str += f'assign valid_out = |({num_inputs}\'(valid_in) & out_sel);\n'
-                verilog_str += f'assign ready_out = ready_in;\n'
+                verilog_str += f'\tassign ready_out = ready_in;\n'
+                verilog_str += f'\tassign valid_out = |valid_out_temp;\n'
 
             verilog_str += f'\nendmodule \n'
 
@@ -126,7 +128,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 data0 = format(int(math.pow(2, int(height))),
                                'b').zfill(int(num_inputs))
                 verilog_str += f'\t\t{num_sel}\'d{i}    :   out_sel = {int(num_inputs)}\'b{data};\n'   # noqa
-            if mux_type == AOIMuxType.Const:
+            if mux_type == AOIMuxType.Const or mux_type == AOIMuxType.ConstReadyValid:
                 verilog_str += f'\t\t{num_sel}\'d{height}    :   out_sel = {int(num_inputs)}\'b{data0};\n'    # noqa
             verilog_str += f'\t\tdefault :   out_sel = {int(num_inputs)}\'b0;\n'
             verilog_str += f'\tendcase \n'
@@ -138,6 +140,9 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog_str += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
             for i in range(height):
                 verilog_str += f'\tinput logic  [{width-1} : 0] I{i}, \n'
+            if ready_valid:
+                verilog_str += f'\tinput logic [{height - 1}:0] valid_in,\n'
+                verilog_str += f'\toutput logic [{num_ops - 1}:0] valid_out,\n'
             for i in range(num_ops - 1):
                 verilog_str += f'\toutput logic  [{width-1} : 0] O{i}, \n'
             verilog_str += f'\toutput logic  [{width-1} : 0] O{num_ops-1}); \n'
@@ -150,8 +155,8 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     verilog_str += f'\t.B1(out_sel[{i*2+1}]), \n'
                     verilog_str += f'\t.B2(I{i*2+1}[{j}]), \n'
                     verilog_str += f'\t.Z(O{i}[{j}])); \n'
-                if (height % 2 != 0):
-                    if (mux_type != mux_type.Const):
+                if height % 2 != 0:
+                    if mux_type != mux_type.Const and mux_type != mux_type.ConstReadyValid:
                         verilog_str += f'\tSC7P5T_AN2X0P5_SSC14R inst_and_{j} ( \n'
                         verilog_str += f'\t.A(out_sel[{i*2+2}]), \n'
                         verilog_str += f'\t.B(I{i*2+2}[{j}]), \n'
@@ -164,11 +169,29 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                         verilog_str += f'\t.B2(1\'b0), \n'
                         verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
                 else:
-                    if (mux_type == mux_type.Const):
+                    if mux_type == mux_type.Const or mux_type == mux_type.ConstReadyValid:
                         verilog_str += f'\tSC7P5T_AN2X0P5_SSC14R inst_and_{j} ( \n'
                         verilog_str += f'\t.A(out_sel[{i*2+2}]), \n'
                         verilog_str += f'\t.B(1\'b0), \n'
                         verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
+
+            # for the constant ready-valid
+            if mux_type == mux_type.ConstReadyValid:
+                for i in range(math.floor(height / 2)):
+                    verilog_str += f'\tSC7P5T_AO22X0P5_SSC14R inst_{i}_valid ( \n'
+                    verilog_str += f'\t.A1(out_sel[{i*2}]), \n'
+                    verilog_str += f'\t.A2(valid_in[{i*2}]), \n'
+                    verilog_str += f'\t.B1(out_sel[{i*2+1}]), \n'
+                    verilog_str += f'\t.B2(valid_in[{i*2+1}]), \n'
+                    verilog_str += f'\t.Z(valid_out[{i}])); \n'
+
+                if height % 2 != 0:
+                    verilog_str += f'\tSC7P5T_AO22X0P5_SSC14R inst_{i + 1}_valid ( \n'
+                    verilog_str += f'\t.A1(out_sel[{i * 2 + 2}]), \n'
+                    verilog_str += f'\t.A2(valid_in[{i * 2 + 2}]), \n'
+                    verilog_str += f'\t.B1(out_sel[{i * 2 + 3}]), \n'
+                    verilog_str += f'\t.B2(1\'b0), \n'
+                    verilog_str += f'\t.Z(valid_out[{i + 1}])); \n'
             verilog_str += "endmodule \n"
 
     _MuxWrapper.verilogFile = _MuxWrapper.verilog_str
