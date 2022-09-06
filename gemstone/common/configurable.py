@@ -98,7 +98,7 @@ class Configurable(Generator):
             slice_wrapper.ports.pop("I")
         else:
             slice_wrapper = SliceWrapper(width, 0, width)
-            self.__pass_through_configs.append(slice_wrapper)
+            self.__pass_through_configs.append((name, slice_wrapper))
 
         slice_wrapper.instance_name = name + "_value"
         self.registers[name] = slice_wrapper
@@ -108,7 +108,14 @@ class Configurable(Generator):
             self.add_config(name, width)
 
     def get_reg_info(self, name):
-        return self.__register_map[name]
+        if name in self.__register_map:
+            return self.__register_map[name]
+        else:
+            for idx, (n, reg) in enumerate(self.__pass_through_configs):
+                if n == name:
+                    # (idx, lo, hi)
+                    return idx + len(self.__registers, ), 0, reg.width - 1
+        raise ValueError("Unknown reg name " + name)
 
     def __create_register(self, working_set):
         reg_width = working_set[-1][-1]
@@ -262,7 +269,7 @@ class Configurable(Generator):
                 self.wire(zext_out, self.read_config_data_mux.ports.I[idx])
 
             # adding pass through as well
-            for idx, reg in enumerate(self.__pass_through_configs):
+            for idx, (name, reg) in enumerate(self.__pass_through_configs):
                 zext_out = _zext(reg.ports.O, reg.width, self.config_data_width)
                 # only append after the normal registers
                 idx = idx + len(self.__registers)
