@@ -50,7 +50,8 @@ def test_aoi_mux_wrapper(height, width):
 @pytest.mark.parametrize('height,width', [(choice([3, 5, 6, 7, 9]),
                                            randint(1, 32))
                                           for _ in range(5)])
-def test_aoi_const_mux_wrapper(height, width):
+@pytest.mark.parametrize("ready_valid", [True, False])
+def test_aoi_const_mux_wrapper(height, width, ready_valid):
     """
     Test that the mux wrapper circuit works as expected. Specifically, we
     initialize a mux with random height and width, and check that the output is
@@ -59,10 +60,10 @@ def test_aoi_const_mux_wrapper(height, width):
     Note that we do not check the behavior with sel > height, because this is
     undefined behavior.
     """
-    mux = AOIMuxWrapper(height, width, AOIMuxType.Const)
+    mux_type = AOIMuxType.ConstReadyValid if ready_valid else AOIMuxType.Const
+    mux = AOIMuxWrapper(height, width, mux_type)
     assert mux.width == width
-    assert mux.name() == \
-        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Const.name}"
+    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_{mux_type.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)
