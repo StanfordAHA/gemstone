@@ -13,7 +13,8 @@ from gemstone.common.mux_wrapper_aoi import AOIMuxWrapper, AOIMuxType
 
 @pytest.mark.parametrize('height,width', [(randint(2, 10), randint(1, 32))
                                           for _ in range(5)])
-def test_aoi_mux_wrapper(height, width):
+@pytest.mark.parametrize("ready_valid", [True, False])
+def test_aoi_mux_wrapper(height, width, ready_valid):
     """
     Test that the mux wrapper circuit works as expected. Specifically, we
     initialize a mux with random height and width, and check that the output is
@@ -22,21 +23,26 @@ def test_aoi_mux_wrapper(height, width):
     Note that we do not check the behavior with sel >= height, because this is
     undefined behavior.
     """
-    mux = AOIMuxWrapper(height, width, AOIMuxType.Regular)
+    mux_type = AOIMuxType.RegularReadyValid if ready_valid else AOIMuxType.Regular
+    mux = AOIMuxWrapper(height, width, mux_type)
     assert mux.height == height
     assert mux.width == width
-    assert mux.name() == \
-        f"MuxWrapperAOI_{height}_{width}_{AOIMuxType.Regular.name}"
+    assert mux.name() == f"MuxWrapperAOI_{height}_{width}_{mux_type.name}"
 
     mux_circuit = mux.circuit()
     tester = fault.Tester(mux_circuit)
     inputs = [fault.random.random_bv(width) for _ in range(height)]
+    valid_in = [fault.random.random_bv(1) for _ in range(height)]
     for i, input_ in enumerate(inputs):
         tester.poke(mux_circuit.I[i], input_)
+        if ready_valid:
+            tester.poke(mux_circuit.valid_in[i], valid_in[i])
     for i in range(height):
         tester.poke(mux_circuit.S, BitVector[mux.sel_bits](i))
         tester.eval()
         tester.expect(mux_circuit.O, inputs[i])
+        if ready_valid:
+            tester.expect(mux_circuit.valid_out, valid_in[i])
 
     with tempfile.TemporaryDirectory() as tempdir:
         for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
