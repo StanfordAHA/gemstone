@@ -77,10 +77,12 @@ def test_aoi_const_mux_wrapper(height, width, ready_valid):
             tester.expect(mux_circuit.O, inputs[i])
         else:
             tester.expect(mux_circuit.O, 0)
+        if mux_type == AOIMuxType.ConstReadyValid:
+            tester.expect(mux_circuit.valid_out, 0)
 
     with tempfile.TemporaryDirectory() as tempdir:
         for aoi_mux in glob.glob("tests/common/rtl/*.sv"):
             shutil.copy(aoi_mux, tempdir)
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
-                               flags=["-Wno-fatal"])
+                               flags=["-Wno-fatal", "--x-assign", "1"])
