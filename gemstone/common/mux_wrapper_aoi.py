@@ -181,7 +181,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                         verilog_str += f'\t.A2(1\'b0), \n'
                         verilog_str += f'\t.Z(O{i+1}[{j}])); \n'
 
-            if mux_type == mux_type.ConstReadyValid:
+            if mux_type == mux_type.ConstReadyValid or mux_type == mux_type.RegularReadyValid:
                 for i in range(math.floor(height / 2)):
                     verilog_str += f'\tAO_CELL inst_{i}_valid ( \n'
                     verilog_str += f'\t.A1(out_sel[{i * 2}]), \n'
@@ -191,12 +191,24 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                     verilog_str += f'\t.Z(valid_out[{i}])); \n'
 
                 if height % 2 != 0:
-                    verilog_str += f'\tAO_CELL inst_{i + 1}_valid ( \n'
-                    verilog_str += f'\t.A1(out_sel[{i * 2 + 2}]), \n'
-                    verilog_str += f'\t.A2(valid_in[{i * 2 + 2}]), \n'
-                    verilog_str += f'\t.B1(out_sel[{i * 2 + 3}]), \n'
-                    verilog_str += f'\t.B2(1\'b0), \n'
-                    verilog_str += f'\t.Z(valid_out[{i + 1}])); \n'
+                    if not _is_const(mux_type):
+                        verilog_str += f'\tAN_CELL inst_and_{i + 1}_valid ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i * 2 + 2}]), \n'
+                        verilog_str += f'\t.A2(valid_in[{i * 2 + 2}]), \n'
+                        verilog_str += f'\t.Z(valid_out[{i + 1}])); \n'
+                    else:
+                        verilog_str += f'\tAO_CELL inst_{i + 1}_valid ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i * 2 + 2}]), \n'
+                        verilog_str += f'\t.A2(valid_in[{i * 2 + 2}]), \n'
+                        verilog_str += f'\t.B1(out_sel[{i * 2 + 3}]), \n'
+                        verilog_str += f'\t.B2(1\'b0), \n'
+                        verilog_str += f'\t.Z(valid_out[{i + 1}])); \n'
+                else:
+                    if _is_const(mux_type):
+                        verilog_str += f'\tAN_CELL inst_and_{i + 1}_valid ( \n'
+                        verilog_str += f'\t.A1(out_sel[{i * 2 + 2}]), \n'
+                        verilog_str += f'\t.A2(1\'b0), \n'
+                        verilog_str += f'\t.Z(valid_out[{i + 1}])); \n'
             verilog_str += "endmodule \n"
 
     _MuxWrapper.verilogFile = _MuxWrapper.verilog_str
