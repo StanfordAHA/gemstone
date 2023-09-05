@@ -29,3 +29,4 @@ We imagine a few important paradigms of passes that would come as part of the ge
 - Wrapping: a wrapping pass would iterate the graph and wrap each generator satisfying some condition using another common generator.
 - Insertion: an insertion pass would iterate over a set of wires and replace the wire with a new instance (of some generator) that would would sit between the previous source and destination ports of the original wire.
 
+
