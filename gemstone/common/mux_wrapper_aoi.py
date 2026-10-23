@@ -20,6 +20,25 @@ def _is_const(mux_type: AOIMuxType):
     return mux_type == AOIMuxType.Const or mux_type == AOIMuxType.ConstReadyValid
 
 
+# Each wrapper emits two inner modules named by width and height only,
+# precoder_<width>_<height> and mux_logic_<width>_<height>, whose contents
+# depend on the mux type (valid ports, the constant input). Two types of one
+# width and height in a design (e.g. a ready-valid data mux and a plain config
+# mux when the data width equals the 32-bit config width) would define two
+# different modules under one name, and tools keep only one of them (Genus:
+# "Could not find a port ... valid_in"). The first type to use a width and
+# height keeps the plain names, so a design without such a pair is unchanged;
+# any other type gets names tagged with its own type.
+_INNER_NAME_OWNER = {}
+
+
+def _inner_suffix(height, width, mux_type):
+    """'' for the type that owns precoder/mux_logic_<width>_<height>, else
+    '_<type>' (e.g. '_regularreadyvalid')."""
+    owner = _INNER_NAME_OWNER.setdefault((width, height), mux_type)
+    return "" if owner == mux_type else f"_{mux_type.name.lower()}"
+
+
 @magma.cache_definition
 def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
     sel_bits = magma.bitutils.clog2(height)
@@ -68,6 +87,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
         if height <= 1:
             magma.wire(io.I[0], io.O)
         else:
+            sfx = _inner_suffix(height, width, mux_type)
             # ======= MUX MODULE =========
 
             verilog_str += f"module {name} ( \n"
@@ -91,12 +111,12 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
                 verilog_str += f'\tlogic [{num_ops - 1}:0] valid_out_temp;\n'
 
             # PRECODER INSTANTIATION #
-            verilog_str += f'\nprecoder_{width}_{height} u_precoder ( \n'
+            verilog_str += f'\nprecoder_{width}_{height}{sfx} u_precoder ( \n'
             verilog_str += '\t.S(S), \n'
             verilog_str += '\t.out_sel(out_sel)); \n'
 
             # MUX_LOGIC INSTANTIATION #
-            verilog_str += f'\nmux_logic_{width}_{height} u_mux_logic ( \n'
+            verilog_str += f'\nmux_logic_{width}_{height}{sfx} u_mux_logic ( \n'
             for i in range(height):
                 verilog_str += f'\t.I{i} (I[{i}]),\n'
             verilog_str += f'\t.out_sel(out_sel), \n'
@@ -122,7 +142,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog_str += f'\nendmodule \n'
 
             # ======== PRECODER MODULE ========
-            verilog_str += f'\nmodule precoder_{width}_{height} (\n'
+            verilog_str += f'\nmodule precoder_{width}_{height}{sfx} (\n'
             verilog_str += f'\tinput logic  [{num_sel-1} : 0] S ,\n'
             verilog_str += f'\toutput logic  [{int(num_inputs)-1} : 0] out_sel );\n'    # noqa
 
@@ -142,7 +162,7 @@ def _generate_mux_wrapper(height, width, mux_type: AOIMuxType):
             verilog_str += f'\nendmodule \n'
 
             # ======== MUX_LOGIC MODULE ========
-            verilog_str += f'\nmodule mux_logic_{width}_{height} ( \n'
+            verilog_str += f'\nmodule mux_logic_{width}_{height}{sfx} ( \n'
             verilog_str += f'\tinput logic  [{int(num_inputs)-1} : 0] out_sel,\n'   # noqa
             for i in range(height):
                 verilog_str += f'\tinput logic  [{width-1} : 0] I{i}, \n'

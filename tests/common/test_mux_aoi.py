@@ -92,3 +92,21 @@ def test_aoi_const_mux_wrapper(height, width, ready_valid):
         tester.compile_and_run(directory=tempdir,
                                magma_output="coreir-verilog",
                                flags=["-Wno-fatal", "--x-assign", "1"])
+
+
+def test_aoi_mux_inner_names_unique_per_type():
+    """Two mux types of one width and height (a ready-valid data mux next to a
+    plain config mux at width 32) must not define two different modules under
+    one name: the first type keeps precoder/mux_logic_<width>_<height>, the
+    others get names tagged with their type, so every name is defined once."""
+    import re
+    width, height = 37, 11
+    defined = []
+    for mux_type in AOIMuxType:
+        verilog = AOIMuxWrapper(height, width, mux_type).circuit().verilogFile
+        defined += re.findall(r"^\s*module (\w+)", verilog, re.M)
+        used = re.findall(r"^(precoder_\w+|mux_logic_\w+) u_", verilog, re.M)
+        assert used and all(u in defined for u in used)
+    assert len(defined) == len(set(defined)) == 4 * 3
+    assert {"precoder_37_11", "mux_logic_37_11",
+            "mux_logic_37_11_regularreadyvalid"} <= set(defined)
